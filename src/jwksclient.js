@@ -1,11 +1,17 @@
 const jwks = require('jwks-rsa');
 
-class JwksClient {
-  constructor(jwksUri) {
-    this.jwksClient = jwks({
-      strictSsl: true,
-      jwksUri,
-    });
+class JWKSClient {
+  constructor(jwksUri, client) {
+    if (!jwksUri) {
+      throw new Error('JWKS URI is required');
+    }
+
+    this.jwksClient =
+      client ||
+      jwks({
+        strictSsl: true,
+        jwksUri,
+      });
   }
 
   getSigningKey(keyId) {
@@ -19,4 +25,4 @@ class JwksClient {
   }
 }
 
-module.exports = JwksClient;
+module.exports = JWKSClient;

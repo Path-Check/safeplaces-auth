@@ -1,6 +1,6 @@
 const timeout = require('./timeout');
 
-class JwksClient {
+class JWKSClient {
   constructor({ keyId, publicKey }) {
     this.keyId = keyId;
     this.publicKey = publicKey;
@@ -15,4 +15,4 @@ class JwksClient {
   }
 }
 
-module.exports = JwksClient;
+module.exports = JWKSClient;

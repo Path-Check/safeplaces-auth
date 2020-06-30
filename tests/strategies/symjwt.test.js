@@ -24,7 +24,39 @@ describe('symmetric JWT strategy', () => {
     }
   });
 
-  it('validates a JWT', () => {
+  it('accepts an array of algorithms', () => {
+    const privateKey = 'xyz';
+
+    try {
+      const strategy = new strategies.SymJWT({
+        algorithm: ['HS256', 'ES256'],
+        privateKey,
+      });
+      expect(strategy).toBeDefined();
+    } catch (e) {
+      expect(e).toBeUndefined();
+    }
+  });
+
+  it('rejects an invalid JWT', () => {
+    const privateKey = 'xyz';
+
+    const strategy = new strategies.SymJWT({
+      algorithm: 'HS256',
+      privateKey,
+    });
+
+    return strategy
+      .validate('abc')
+      .then(decoded => {
+        expect(decoded).toBeUndefined();
+      })
+      .catch(err => {
+        expect(err.message).toBeDefined();
+      });
+  });
+
+  it('decodes a valid JWT', () => {
     const userId = 'user1';
     const userRole = 'role1';
 
@@ -45,8 +77,13 @@ describe('symmetric JWT strategy', () => {
       expiresIn: '1h',
     });
 
-    return strategy.validate(token).then(decoded => {
-      expect(decoded).toMatchObject(jwtClaims);
-    });
+    return strategy
+      .validate(token)
+      .then(decoded => {
+        expect(decoded).toMatchObject(jwtClaims);
+      })
+      .catch(err => {
+        expect(err).toBeUndefined();
+      });
   });
 });
