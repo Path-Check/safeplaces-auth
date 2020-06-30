@@ -1,10 +1,17 @@
 {
   "name": "@aiyan/safeplaces-auth",
+  "version": "0.0.3",
   "description": "The modular authentication service for the SafePlaces backend.",
-  "version": "0.0.2",
   "main": "src/index.js",
   "license": "MIT",
   "author": "Aiyan Jiang",
+  "keywords": [
+    "safeplaces",
+    "auth",
+    "service"
+  ],
+  "repository": "github:aiyan/safeplaces-auth",
+  "homepage": "https://github.com/aiyan/safeplaces-auth#readme",
   "scripts": {
     "lint": "eslint",
     "format": "prettier --write \"**/*.{js,json}\"",
