@@ -2,6 +2,10 @@ const jwt = require('jsonwebtoken');
 
 class Auth0 {
   constructor({ jwksClient, apiAudience }) {
+    if (!jwksClient) {
+      throw new Error('JWKS client is required');
+    }
+
     this.jwksClient = jwksClient;
     this.apiAudience = apiAudience;
 

@@ -1,17 +1,53 @@
 const jwt = require('jsonwebtoken');
 const strategies = require('../../src/strategies');
 const keyPair = require('../mocks/keypair');
-const JwksClient = require('../mocks/jwksclient');
+const JWKSClient = require('../mocks/jwksclient');
 
 describe('auth0 strategy', () => {
-  it('validates a JWT', () => {
+  it('throws an error if the JWKS client is missing', () => {
+    try {
+      const strategy = new strategies.Auth0({
+        apiAudience: 'https://example.com/',
+      });
+      expect(strategy).toBeUndefined();
+    } catch (e) {
+      expect(e.message).toEqual('JWKS client is required');
+    }
+  });
+
+  it('rejects an invalid JWT', () => {
+    const passphrase = 'xyz';
+    const { keyId, publicKey } = keyPair.generate(passphrase);
+
+    const jwksClient = new JWKSClient({
+      keyId,
+      publicKey,
+    });
+    const apiAudience = 'https://example.com/';
+
+    const strategy = new strategies.Auth0({
+      jwksClient,
+      apiAudience,
+    });
+
+    return strategy
+      .validate('abc')
+      .then(decoded => {
+        expect(decoded).toBeUndefined();
+      })
+      .catch(err => {
+        expect(err.message).toBeDefined();
+      });
+  });
+
+  it('decodes a valid JWT', () => {
     const userId = 'user1';
     const userRole = 'role1';
 
     const passphrase = 'xyz';
     const { keyId, publicKey, privateKey } = keyPair.generate(passphrase);
 
-    const jwksClient = new JwksClient({
+    const jwksClient = new JWKSClient({
       keyId,
       publicKey,
     });
@@ -41,8 +77,13 @@ describe('auth0 strategy', () => {
       },
     );
 
-    return strategy.validate(token).then(decoded => {
-      expect(decoded).toMatchObject(jwtClaims);
-    });
+    return strategy
+      .validate(token)
+      .then(decoded => {
+        expect(decoded).toMatchObject(jwtClaims);
+      })
+      .catch(err => {
+        expect(err).toBeUndefined();
+      });
   });
 });
