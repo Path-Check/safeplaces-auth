@@ -13,8 +13,8 @@ describe('logout handler', () => {
 
   it('handles a logout request', () => {
     const redirect = 'https://example.com';
-    const cookie =
-      'access_token=deleted;Expires=Mon, 02 Feb 1970 05:00:00 GMT;Path=/;HttpOnly;SameSite=None;';
+    const expires = new Date(1970, 1, 1).toUTCString();
+    const cookie = `access_token=deleted;Expires=${expires};Path=/;HttpOnly;SameSite=None;`;
     const logoutHandler = new handlers.Logout({ redirect });
 
     const req = {};
