@@ -18,7 +18,7 @@ class Logout {
       name: 'access_token',
       value: 'deleted',
       path: '/',
-      expires: new Date(1970, 1, 2),
+      expires: new Date(1970, 1, 1),
       httpOnly: true,
       sameSite: !!this.cookie.sameSite,
       secure: !!this.cookie.secure,
