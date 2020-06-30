@@ -1,17 +1,37 @@
-const jwt = require('jsonwebtoken');
-const keyPair = require('./mocks/keypair');
-const userGetter = require('./mocks/usergetter');
-const strategies = require('../src/strategies');
-const JwksClient = require('./mocks/jwksclient');
 const Enforcer = require('../src/enforcer');
+const userGetter = require('./mocks/usergetter');
+const Strategy = require('./mocks/strategy');
 const Application = require('./mocks/application');
+
+jest.mock('../src/strategies');
+
+describe('enforcer', () => {
+  it('throws an error when the strategy is missing', () => {
+    try {
+      const enforcer = new Enforcer({
+        userGetter: () => null,
+      });
+      expect(enforcer).toBeUndefined();
+    } catch (e) {
+      expect(e.message).toEqual('Enforcer strategy is required');
+    }
+  });
+
+  it('throws an error when the user getter is missing', () => {
+    try {
+      const enforcer = new Enforcer({
+        strategy: new Strategy(),
+      });
+      expect(enforcer).toBeUndefined();
+    } catch (e) {
+      expect(e.message).toEqual('Enforcer user getter is required');
+    }
+  });
+});
 
 describe('setup', () => {
   const enforcer = new Enforcer({
-    strategy: new strategies.SymJWT({
-      algorithm: 'HS256',
-      privateKey: 'xyz',
-    }),
+    strategy: new Strategy(),
     userGetter: () => null,
   });
 
@@ -24,10 +44,7 @@ describe('setup', () => {
 
 describe('process request', () => {
   const enforcer = new Enforcer({
-    strategy: new strategies.SymJWT({
-      algorithm: 'HS256',
-      privateKey: 'xyz',
-    }),
+    strategy: new Strategy(),
     userGetter: () => null,
   });
 
@@ -51,111 +68,41 @@ describe('process request', () => {
     });
   });
 
-  describe('allows authorized requests', () => {
-    test('when the strategy is symmetric JWT', () => {
-      const privateKey = 'xyz';
+  it('allows authorized requests', () => {
+    const userId = 'user1';
+    const userRole = 'role1';
+    const actualUser = {
+      id: userId,
+      role: userRole,
+    };
+    const jwtClaims = {
+      sub: userId,
+      role: userRole,
+    };
 
-      const userId = 'user1';
-      const userRole = 'role1';
-      const actualUser = {
-        id: userId,
-        role: userRole,
-      };
-
-      const enforcer = new Enforcer({
-        strategy: new strategies.SymJWT({
-          algorithm: 'HS256',
-          privateKey,
-        }),
-        userGetter: async () => {
-          return userGetter(actualUser);
-        },
-      });
-
-      const token = jwt.sign(
-        {
-          sub: userId,
-          role: userRole,
-        },
-        privateKey,
-        {
-          expiresIn: '1h',
-        },
-      );
-
-      const req = {
-        cookies: {
-          access_token: token,
-        },
-      };
-
-      return enforcer.processRequest(req).then(allow => {
-        expect(allow).toBe(true);
-
-        const { user: testUser } = req;
-        expect(testUser).toBeDefined();
-        expect(testUser).toMatchObject(actualUser);
-      });
+    const strategy = new Strategy(jwtClaims);
+    const enforcer = new Enforcer({
+      strategy,
+      userGetter: async () => {
+        return userGetter(actualUser);
+      },
     });
 
-    test('when the strategy is Auth0', () => {
-      const userId = 'user1';
-      const userRole = 'role1';
+    const token = 'abc';
+    const req = {
+      cookies: {
+        access_token: token,
+      },
+    };
 
-      const actualUser = {
-        id: userId,
-        role: userRole,
-      };
+    return enforcer.processRequest(req).then(allow => {
+      expect(allow).toBe(true);
+      expect(strategy.validate).toBeCalledTimes(1);
+      expect(strategy.validate).toBeCalledWith(token);
 
-      const passphrase = 'xyz';
-      const { keyId, publicKey, privateKey } = keyPair.generate(passphrase);
-
-      const jwksClient = new JwksClient({
-        keyId,
-        publicKey,
-      });
-      const apiAudience = 'https://example.com/';
-
-      const enforcer = new Enforcer({
-        strategy: new strategies.Auth0({
-          jwksClient,
-          apiAudience,
-        }),
-        userGetter: () => {
-          return userGetter(actualUser);
-        },
-      });
-
-      const token = jwt.sign(
-        {
-          sub: userId,
-          role: userRole,
-        },
-        {
-          key: privateKey,
-          passphrase,
-        },
-        {
-          audience: apiAudience,
-          algorithm: 'RS256',
-          keyid: keyId,
-          expiresIn: '1h',
-        },
-      );
-
-      const req = {
-        cookies: {
-          access_token: token,
-        },
-      };
-
-      return enforcer.processRequest(req).then(allow => {
-        expect(allow).toBe(true);
-
-        const { user: testUser } = req;
-        expect(testUser).toBeDefined();
-        expect(testUser).toMatchObject(actualUser);
-      });
+      const { user: testUser } = req;
+      expect(testUser).toBeDefined();
+      expect(testUser).toMatchObject(actualUser);
     });
   });
 });

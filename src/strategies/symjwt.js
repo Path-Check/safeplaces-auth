@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-class SymJWTStrategy {
+class SymJWT {
   constructor({ algorithm, privateKey }) {
     if (!algorithm) {
       throw new Error('JWT signing algorithm is required');
@@ -30,4 +30,4 @@ class SymJWTStrategy {
   }
 }
 
-module.exports = SymJWTStrategy;
+module.exports = SymJWT;
