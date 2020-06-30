@@ -1,29 +1,15 @@
-const crypto = require('crypto');
-
-function generateCSRFToken() {
-  return crypto
-    .randomBytes(32)
-    .toString('base64')
-    .replace(/[^a-zA-Z0-9]/g, '')
-    .substr(0, 16);
-}
-
-function generateQueryString(obj) {
-  let queryString = '';
-  for (const [k, v] of Object.entries(obj)) {
-    const encodedV = encodeURIComponent(String(v));
-    queryString += `&${k}=${encodedV}`;
+function cookieString(attributes) {
+  if (!attributes) {
+    throw new Error('Cookie attributes are required');
   }
-  queryString = queryString.substr(1);
-  return queryString;
-}
-
-function generateCookieString(attributes) {
+  if (!attributes.name || !attributes.value) {
+    throw new Error('Cookie name and value are required');
+  }
   const { name, value, expires, httpOnly, sameSite, path, secure } = attributes;
 
   let cookieString = `${name}=${value};`;
   if (expires) {
-    cookieString += expires.toUTCString + ';';
+    cookieString += `Expires=${expires.toUTCString()};`;
   }
   if (path) {
     cookieString += `Path=${path};`;
@@ -42,3 +28,5 @@ function generateCookieString(attributes) {
 
   return cookieString;
 }
+
+module.exports = { cookieString };
