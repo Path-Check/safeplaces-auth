@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-class Auth0Strategy {
+class Auth0 {
   constructor({ jwksClient, apiAudience }) {
     this.jwksClient = jwksClient;
     this.apiAudience = apiAudience;
@@ -31,4 +31,4 @@ class Auth0Strategy {
   }
 }
 
-module.exports = Auth0Strategy;
+module.exports = Auth0;
