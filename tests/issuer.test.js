@@ -2,6 +2,15 @@ const jwt = require('jsonwebtoken');
 const Issuer = require('../src/issuer');
 
 describe('token issuer', () => {
+  it('throws an error when the private key is missing', () => {
+    try {
+      const issuer = new Issuer({});
+      expect(issuer).toBeUndefined();
+    } catch (e) {
+      expect(e.message).toEqual('Private key is required');
+    }
+  });
+
   it('signs a valid JWT', () => {
     const privateKey = 'xyz';
     const issuer = new Issuer({ privateKey });

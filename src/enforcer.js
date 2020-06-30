@@ -14,14 +14,21 @@ class Enforcer {
   }
 
   secure(app) {
-    app.use((req, res, next) => {
-      const allow = this.processRequest(req);
-      if (!allow) {
-        return res.status(401).send('Unauthorized');
-      } else {
-        return next();
-      }
-    });
+    app.use(this.handleRequest);
+  }
+
+  handleRequest(req, res, next) {
+    return this.processRequest(req)
+      .then(allow => {
+        if (!allow) {
+          return res.status(403).send('Forbidden');
+        } else {
+          return next();
+        }
+      })
+      .catch(err => {
+        return next(err);
+      });
   }
 
   async processRequest(req) {

@@ -10,9 +10,13 @@
     "test": "jest",
     "coverage": "jest --coverage"
   },
+  "files": [
+    "src/**/*"
+  ],
   "dependencies": {
     "jsonwebtoken": "^8.5.1",
-    "jwks-rsa": "^1.8.1"
+    "jwks-rsa": "^1.8.1",
+    "node-fetch": "^2.6.0"
   },
   "devDependencies": {
     "eslint": "^7.3.1",

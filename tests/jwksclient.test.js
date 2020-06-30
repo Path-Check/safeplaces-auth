@@ -1,4 +1,7 @@
+const jwks = require('jwks-rsa');
 const JWKSClient = require('../src/jwksclient');
+
+jest.mock('jwks-rsa', () => jest.fn());
 
 describe('JWKS client', () => {
   it('throws an error when the JWKS URI is missing', () => {
@@ -46,5 +49,11 @@ describe('JWKS client', () => {
         expect(testKey).toBeUndefined();
       })
       .catch(err => expect(err).toBe(fetchError));
+  });
+
+  it('it creates a jwks RSA client when one is not given', () => {
+    const jwksClient = new JWKSClient('https://example.com/');
+    expect(jwksClient).toBeDefined();
+    expect(jwks).toHaveBeenCalledTimes(1);
   });
 });

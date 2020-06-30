@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 class Issuer {
   constructor({ privateKey, algorithm }) {
     if (!privateKey) {
-      throw new Error('Private key is required.');
+      throw new Error('Private key is required');
     }
     this.privateKey = privateKey;
     this.algorithm = algorithm || 'HS256';
