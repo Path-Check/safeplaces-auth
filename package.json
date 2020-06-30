@@ -1,0 +1,23 @@
+{
+  "name": "safeplaces-auth",
+  "version": "0.0.1",
+  "main": "src/index.js",
+  "license": "MIT",
+  "author": "Aiyan Jiang",
+  "scripts": {
+    "lint": "eslint",
+    "format": "prettier --write \"**/*.{js,json}\"",
+    "test": "jest",
+    "coverage": "jest --coverage"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^8.5.1",
+    "jwks-rsa": "^1.8.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.3.1",
+    "eslint-plugin-jest": "^23.17.1",
+    "jest": "^26.1.0",
+    "prettier": "^2.0.5"
+  }
+}
