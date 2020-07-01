@@ -102,7 +102,7 @@ app.get('/auth/logout', logoutHandler.handle);
 ### Auth0
 
 Validate the JSON Web Token by checking the signature with
-the retrieved public key while validating the API audience.
+the retrieved public key, and validate the API audience.
 
 ```javascript
 const auth = require('@aiyan/safeplaces-auth');
@@ -119,7 +119,7 @@ const auth0Strategy = new auth.strategies.Auth0({
 ### Symmetric JWT
 
 Validate the JSON Web Token by checking the signature with
-the fixed private key.
+a fixed private key.
 
 ```javascript
 const auth = require('@aiyan/safeplaces-auth');
