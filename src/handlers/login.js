@@ -18,7 +18,7 @@ class Login {
     if (!auth0.clientSecret) {
       throw new Error('Auth0 client secret is required');
     }
-    if (!auth0.dbConnection) {
+    if (!auth0.realm) {
       throw new Error('Auth0 DB connection is required');
     }
     this.auth0 = auth0;
@@ -62,13 +62,16 @@ class Login {
 
   async fetchAccessToken({ username, password }) {
     const params = new URLSearchParams();
-    params.append('grant_type', 'password');
+    params.append(
+      'grant_type',
+      'http://auth0.com/oauth/grant-type/password-realm',
+    );
     params.append('username', username);
     params.append('password', password);
     params.append('audience', this.auth0.apiAudience);
     params.append('client_id', this.auth0.clientId);
     params.append('client_secret', this.auth0.clientSecret);
-    params.append('connection', this.auth0.dbConnection);
+    params.append('realm', this.auth0.realm);
     params.append('scope', 'openid');
 
     const response = await fetch(`${this.auth0.baseUrl}/oauth/token`, {

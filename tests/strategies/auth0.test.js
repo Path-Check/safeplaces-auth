@@ -4,6 +4,18 @@ const keyPair = require('../mocks/keypair');
 const JWKSClient = require('../mocks/jwksclient');
 
 describe('auth0 strategy', () => {
+  const userId = 'user1';
+  const userRole = 'role1';
+
+  const passphrase = 'xyz';
+  const { keyId, privateKey, publicKey } = keyPair.generate(passphrase);
+
+  const apiAudience = 'https://example.com/';
+  const jwtClaims = {
+    sub: userId,
+    role: userRole,
+  };
+
   it('throws an error when the JWKS client is missing', () => {
     try {
       const strategy = new strategies.Auth0({
@@ -15,28 +27,59 @@ describe('auth0 strategy', () => {
     }
   });
 
-  it('rejects the JWT when get signing key throws an error', () => {
-    const userId = 'user1';
-    const userRole = 'role1';
-
-    const passphrase = 'xyz';
-    const { keyId, privateKey, publicKey } = keyPair.generate(passphrase);
-
+  it('enables verbose logging when the environment variable is set', () => {
     const jwksClient = new JWKSClient({
       keyId: 'nop',
       publicKey,
     });
-    const apiAudience = 'https://example.com/';
+
+    process.env.AUTH_LOGGING = 'verbose';
+    const strategy = new strategies.Auth0({
+      jwksClient,
+      apiAudience,
+    });
+    delete process.env.AUTH_LOGGING;
+
+    const token = jwt.sign(
+      jwtClaims,
+      {
+        key: privateKey,
+        passphrase,
+      },
+      {
+        audience: apiAudience,
+        algorithm: 'RS256',
+        keyid: keyId,
+        expiresIn: '1h',
+      },
+    );
+
+    // Mock `console.log` implementation.
+    const originalConsoleLog = console.log;
+    console.log = jest.fn();
+
+    return strategy
+      .validate(token)
+      .then(decoded => {
+        expect(decoded).toBeUndefined();
+      })
+      .catch(() => {
+        expect(console.log.mock.calls[0][0].message).toEqual('Key id mismatch');
+        // Restore `console.log` implementation.
+        console.log = originalConsoleLog;
+      });
+  });
+
+  it('rejects the JWT when get signing key throws an error', () => {
+    const jwksClient = new JWKSClient({
+      keyId: 'nop',
+      publicKey,
+    });
 
     const strategy = new strategies.Auth0({
       jwksClient,
       apiAudience,
     });
-
-    const jwtClaims = {
-      sub: userId,
-      role: userRole,
-    };
 
     const token = jwt.sign(
       jwtClaims,
@@ -65,14 +108,10 @@ describe('auth0 strategy', () => {
   });
 
   it('rejects an invalid JWT', () => {
-    const passphrase = 'xyz';
-    const { keyId, publicKey } = keyPair.generate(passphrase);
-
     const jwksClient = new JWKSClient({
       keyId,
       publicKey,
     });
-    const apiAudience = 'https://example.com/';
 
     const strategy = new strategies.Auth0({
       jwksClient,
@@ -90,27 +129,15 @@ describe('auth0 strategy', () => {
   });
 
   it('decodes a valid JWT', () => {
-    const userId = 'user1';
-    const userRole = 'role1';
-
-    const passphrase = 'xyz';
-    const { keyId, publicKey, privateKey } = keyPair.generate(passphrase);
-
     const jwksClient = new JWKSClient({
       keyId,
       publicKey,
     });
-    const apiAudience = 'https://example.com/';
 
     const strategy = new strategies.Auth0({
       jwksClient,
       apiAudience,
     });
-
-    const jwtClaims = {
-      sub: userId,
-      role: userRole,
-    };
 
     const token = jwt.sign(
       jwtClaims,

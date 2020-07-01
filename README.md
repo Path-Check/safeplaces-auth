@@ -30,9 +30,10 @@ it is invoked.
 const auth = require('@aiyan/safeplaces-auth');
 
 // Instantiate a public key retrieval client.
-const pkClient = new auth.JWKSClient({
-  jwksUri: `${process.env.AUTH0_BASE_URL}/.well-known/jwks.json`,
-});
+const pkClient = new auth.JWKSClient(
+  // Pass the URL for the JWKS.
+  `${process.env.AUTH0_BASE_URL}/.well-known/jwks.json`,
+);
 
 // Instantiate a request verification strategy.
 const auth0Strategy = new auth.strategies.Auth0({
@@ -66,7 +67,7 @@ const loginHandler = new auth.handlers.Login({
     apiAudience: process.env.AUTH0_API_AUDIENCE,
     clientId: process.env.AUTH0_CLIENT_ID,
     clientSecret: process.env.AUTH0_CLIENT_SECRET,
-    dbConnection: process.env.AUTH0_DB_CONNECTION,
+    realm: process.env.AUTH0_DB_CONNECTION,
   },
   cookie: {
     // Enable/disable cookie attributes depending on environment.
@@ -94,4 +95,63 @@ const logoutHandler = new auth.handlers.Logout({
 
 // Handle all requests to the logout endpoint.
 app.get('/auth/logout', logoutHandler.handle);
+```
+
+## Strategies
+
+### Auth0
+
+Validate the JSON Web Token by checking the signature with
+the retrieved public key while validating the API audience.
+
+```javascript
+const auth = require('@aiyan/safeplaces-auth');
+
+const pkClient = new auth.JWKSClient(
+  `${process.env.AUTH0_BASE_URL}/.well-known/jwks.json`,
+);
+const auth0Strategy = new auth.strategies.Auth0({
+  jwksClient: pkClient,
+  apiAudience: process.env.AUTH0_API_AUDIENCE,
+});
+```
+
+### Symmetric JWT
+
+Validate the JSON Web Token by checking the signature with
+the fixed private key.
+
+```javascript
+const auth = require('@aiyan/safeplaces-auth');
+
+const symJWTStrategy = new auth.strategies.SymJWT({
+  algorithm: 'HS256',
+  privateKey: process.env.JWT_SECRET,
+});
+```
+
+### Dynamic strategy selection
+
+You can also pass a function into the strategy parameter
+to dynamically select the strategy based on the request
+or some other variables.
+
+The function should accept the request as the only argument
+and return the desired strategy or a promise resolving the
+desired strategy.
+
+```javascript
+const enforcer = new auth.Enforcer({
+  strategy: req => {
+    console.log(req);
+    // Check something in the request.
+    // ...
+    // Example conditional:
+    if (process.env.NODE_ENV === 'development') {
+      return symJWTStrategy;
+    } else {
+      return auth0Strategy;
+    }
+  },
+});
 ```

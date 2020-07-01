@@ -29,6 +29,41 @@ describe('enforcer', () => {
       expect(e.message).toEqual('Enforcer user getter is required');
     }
   });
+
+  it('enables verbose logging when the environment variable is set', () => {
+    process.env.AUTH_LOGGING = 'verbose';
+    const enforcer = new Enforcer({
+      strategy: new Strategy(),
+      userGetter: () => null,
+    });
+    delete process.env.AUTH_LOGGING;
+
+    const mockError = new Error('Unauthorized');
+    enforcer.processRequest = jest.fn(async () => {
+      await timeout(0);
+      throw mockError;
+    });
+
+    // Mock `console.log` implementation.
+    const originalConsoleLog = console.log;
+    console.log = jest.fn();
+
+    const res = new Response();
+    return enforcer
+      .handleRequest({}, res, jest.fn())
+      .then(() => {
+        expect(console.log).toHaveBeenCalledWith(mockError);
+        // Restore `console.log` implementation.
+        console.log = originalConsoleLog;
+
+        expect(res.status).toHaveBeenCalledTimes(1);
+        expect(res.status).toHaveBeenCalledWith(403);
+        expect(res.send).toHaveBeenCalledWith('Forbidden');
+      })
+      .catch(err => {
+        expect(err).toBeUndefined();
+      });
+  });
 });
 
 describe('setup', () => {

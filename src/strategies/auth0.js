@@ -8,12 +8,18 @@ class Auth0 {
 
     this.jwksClient = jwksClient;
     this.apiAudience = apiAudience;
+    this.verbose = process.env.AUTH_LOGGING === 'verbose';
 
     this.publicKeyGetter = (header, callback) => {
       this.jwksClient
         .getSigningKey(header.kid)
         .then(key => callback(null, key))
-        .catch(err => callback(err));
+        .catch(err => {
+          if (this.verbose) {
+            console.log(err);
+          }
+          callback(err);
+        });
     };
   }
 
