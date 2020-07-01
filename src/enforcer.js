@@ -19,38 +19,22 @@ class Enforcer {
 
   handleRequest(req, res, next) {
     return this.processRequest(req)
-      .then(allow => {
-        if (!allow) {
-          return res.status(403).send('Forbidden');
-        } else {
-          return next();
-        }
-      })
-      .catch(err => {
-        return next(err);
-      });
+      .then(() => next())
+      .catch(() => res.status(403).send('Forbidden'));
   }
 
   async processRequest(req) {
-    let token = null;
-    try {
-      // Try to obtain the token from the header.
-      token = reqUtils.sourceCookie(req);
-    } catch (e) {
-      return false;
-    }
+    // Try to obtain the token from the header.
+    const token = reqUtils.sourceCookie(req);
 
-    let decoded;
-    try {
-      // Try to validate and decode the token.
-      decoded = await this.strategy.validate(token);
-    } catch (e) {
-      return false;
+    let strategy = this.strategy;
+    if (typeof strategy === 'function') {
+      strategy = await Promise.resolve(strategy(req));
     }
+    // Try to validate and decode the token.
+    const decoded = await strategy.validate(token);
 
     req.user = await this.userGetter(decoded.sub);
-
-    return true;
   }
 }
 

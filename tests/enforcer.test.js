@@ -104,51 +104,18 @@ describe('handle request', () => {
       strategy: new Strategy(),
       userGetter: () => null,
     });
-    enforcer.processRequest = jest.fn(async req => {
+    enforcer.processRequest = jest.fn(async () => {
       await timeout(0);
-      return req.allow;
+      throw new Error('Unauthorized');
     });
 
     const res = new Response();
     return enforcer
-      .handleRequest(
-        {
-          allow: false,
-        },
-        res,
-        jest.fn(),
-      )
+      .handleRequest({}, res, jest.fn())
       .then(() => {
         expect(res.status).toHaveBeenCalledTimes(1);
         expect(res.status).toHaveBeenCalledWith(403);
         expect(res.send).toHaveBeenCalledWith('Forbidden');
-      })
-      .catch(err => {
-        expect(err).toBeUndefined();
-      });
-  });
-
-  it('forwards the error when a processing error is thrown', () => {
-    const enforcer = new Enforcer({
-      strategy: new Strategy(),
-      userGetter: () => null,
-    });
-
-    const testErr = new Error('Validation error');
-    enforcer.processRequest = jest.fn(async () => {
-      await timeout(0);
-      throw testErr;
-    });
-
-    const res = new Response();
-    const next = jest.fn();
-    return enforcer
-      .handleRequest({}, res, next)
-      .then(() => {
-        expect(res.status).not.toHaveBeenCalled();
-        expect(res.send).not.toHaveBeenCalled();
-        expect(next).toHaveBeenCalledTimes(1);
-        expect(next).toHaveBeenCalledWith(testErr);
       })
       .catch(err => {
         expect(err).toBeUndefined();
@@ -183,7 +150,10 @@ describe('process request', () => {
     test.each(requests)('when the request is %j', req => {
       return enforcer
         .processRequest(req)
-        .then(allow => expect(allow).toBe(false));
+        .then(() => expect(true).toBe(false))
+        .catch(err => {
+          expect(err).toBeDefined();
+        });
     });
 
     test('when a token validation error is thrown', () => {
@@ -198,16 +168,14 @@ describe('process request', () => {
 
       return enforcer
         .processRequest({ cookies: { access_token: 'xyz' } })
-        .then(allow => {
-          expect(allow).toBe(false);
-        })
+        .then(() => expect(true).toBe(false))
         .catch(err => {
-          expect(err).toBeUndefined();
+          expect(err).toBeDefined();
         });
     });
   });
 
-  it('allows authorized requests', () => {
+  describe('allows authorized requests', () => {
     const userId = 'user1';
     const userRole = 'role1';
     const actualUser = {
@@ -219,14 +187,6 @@ describe('process request', () => {
       role: userRole,
     };
 
-    const strategy = new Strategy(jwtClaims);
-    const enforcer = new Enforcer({
-      strategy,
-      userGetter: async () => {
-        return userGetter(actualUser);
-      },
-    });
-
     const token = 'abc';
     const req = {
       cookies: {
@@ -234,14 +194,54 @@ describe('process request', () => {
       },
     };
 
-    return enforcer.processRequest(req).then(allow => {
-      expect(allow).toBe(true);
-      expect(strategy.validate).toBeCalledTimes(1);
-      expect(strategy.validate).toBeCalledWith(token);
+    function expectedResult(enforcer, strategy) {
+      return enforcer.processRequest(req).then(() => {
+        expect(strategy.validate).toBeCalledTimes(1);
+        expect(strategy.validate).toBeCalledWith(token);
 
-      const { user: testUser } = req;
-      expect(testUser).toBeDefined();
-      expect(testUser).toMatchObject(actualUser);
+        const { user: testUser } = req;
+        expect(testUser).toBeDefined();
+        expect(testUser).toMatchObject(actualUser);
+      });
+    }
+
+    test('when the strategy is static', () => {
+      const strategy = new Strategy(jwtClaims);
+      const enforcer = new Enforcer({
+        strategy,
+        userGetter: async () => {
+          return userGetter(actualUser);
+        },
+      });
+
+      return expectedResult(enforcer, strategy);
+    });
+
+    test('when the strategy is dynamic and synchronous', () => {
+      const strategy = new Strategy(jwtClaims);
+      const enforcer = new Enforcer({
+        strategy: () => strategy,
+        userGetter: async () => {
+          return userGetter(actualUser);
+        },
+      });
+
+      return expectedResult(enforcer, strategy);
+    });
+
+    test('when the strategy is dynamic and asynchronous', () => {
+      const strategy = new Strategy(jwtClaims);
+      const enforcer = new Enforcer({
+        strategy: async () => {
+          await timeout(0);
+          return strategy;
+        },
+        userGetter: async () => {
+          return userGetter(actualUser);
+        },
+      });
+
+      return expectedResult(enforcer, strategy);
     });
   });
 });
