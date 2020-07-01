@@ -71,7 +71,7 @@ describe('login handler', () => {
         apiAudience: 'https://example.com/',
         clientId: 'abc',
         clientSecret: 'xyz',
-        dbConnection: 'test',
+        realm: 'test',
       },
     });
     const accessToken = 'xyz';
@@ -105,7 +105,7 @@ describe('login handler', () => {
         apiAudience: 'https://example.com/',
         clientId: 'abc',
         clientSecret: 'xyz',
-        dbConnection: 'test',
+        realm: 'test',
       },
     });
     loginHandler.processRequest = async () => {
@@ -136,7 +136,7 @@ describe('process request', () => {
         apiAudience: 'https://example.com/',
         clientId: 'abc',
         clientSecret: 'xyz',
-        dbConnection: 'test',
+        realm: 'test',
       },
     });
     loginHandler.fetchAccessToken = jest.fn();
@@ -170,7 +170,7 @@ describe('process request', () => {
         apiAudience: 'https://example.com/',
         clientId: 'abc',
         clientSecret: 'xyz',
-        dbConnection: 'test',
+        realm: 'test',
       },
     });
     loginHandler.fetchAccessToken = jest.fn();
@@ -202,7 +202,7 @@ describe('fetch access token', () => {
         apiAudience: 'https://example.com/',
         clientId: 'abc',
         clientSecret: 'xyz',
-        dbConnection: 'test',
+        realm: 'test',
       },
     });
 
@@ -239,7 +239,7 @@ describe('fetch access token', () => {
         apiAudience: 'https://example.com/',
         clientId: 'abc',
         clientSecret: 'xyz',
-        dbConnection: 'test',
+        realm: 'test',
       },
     });
 

@@ -11,16 +11,22 @@ class Enforcer {
 
     this.strategy = strategy;
     this.userGetter = userGetter;
+    this.verbose = process.env.AUTH_LOGGING === 'verbose';
   }
 
   secure(app) {
-    app.use(this.handleRequest);
+    app.use(this.handleRequest.bind(this));
   }
 
   handleRequest(req, res, next) {
     return this.processRequest(req)
       .then(() => next())
-      .catch(() => res.status(403).send('Forbidden'));
+      .catch(err => {
+        if (this.verbose) {
+          console.log(err);
+        }
+        res.status(403).send('Forbidden');
+      });
   }
 
   async processRequest(req) {

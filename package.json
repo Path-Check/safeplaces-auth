@@ -1,6 +1,6 @@
 {
   "name": "@aiyan/safeplaces-auth",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "The modular authentication service for the SafePlaces backend.",
   "main": "src/index.js",
   "license": "MIT",
