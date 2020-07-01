@@ -20,7 +20,10 @@ class Enforcer {
 
   handleRequest(req, res, next) {
     return this.processRequest(req)
-      .then(() => next())
+      .then(() => {
+        if (!next) return;
+        next();
+      })
       .catch(err => {
         if (this.verbose) {
           console.log(err);

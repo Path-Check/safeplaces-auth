@@ -134,6 +134,33 @@ describe('handle request', () => {
       });
   });
 
+  it('allows the request when it is authorized and no next function is given', () => {
+    const enforcer = new Enforcer({
+      strategy: new Strategy(),
+      userGetter: () => null,
+    });
+    enforcer.processRequest = async req => {
+      await timeout(0);
+      return req.allow;
+    };
+
+    const res = new Response();
+    return enforcer
+      .handleRequest(
+        {
+          allow: true,
+        },
+        res,
+      )
+      .then(() => {
+        expect(res.status).not.toHaveBeenCalled();
+        expect(res.send).not.toHaveBeenCalled();
+      })
+      .catch(err => {
+        expect(err).toBeUndefined();
+      });
+  });
+
   it('rejects the request when it is unauthorized', () => {
     const enforcer = new Enforcer({
       strategy: new Strategy(),
