@@ -5,10 +5,6 @@
 
 The modular authentication service for the SafePlaces backend.
 
-**Supported strategies:**
-- Auth0 asymmetric JWT
-- Symmetric JWT
-
 ```shell script
 # Install using NPM
 npm install @aiyan/safeplaces-auth
@@ -149,6 +145,10 @@ app.get('/auth/logout', logoutHandler.handle.bind(logoutHandler));
 ```
 
 ## Strategies
+
+**Supported strategies:**
+- Auth0 asymmetric JWT
+- Symmetric JWT
 
 ### Auth0
 
