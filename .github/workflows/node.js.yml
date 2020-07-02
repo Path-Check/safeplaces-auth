@@ -14,15 +14,15 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [10.x, 12.x, 14.x]
-
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: borales/actions-yarn@v2.0.0
+    - name: Use Node.js 12.x
+      uses: actions/setup-node@v2.1.0
       with:
-        node-version: ${{ matrix.node-version }}
-    - run: yarn install --frozen-lockfile
-    - run: yarn coverage
+        node-version: 12.x
+    - uses: borales/actions-yarn@v2.3.0
+      with:
+        cmd: yarn install --frozen-lockfile
+    - uses: borales/actions-yarn@v2.3.0
+      with:
+        cmd: yarn coverage
