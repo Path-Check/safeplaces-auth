@@ -75,9 +75,9 @@ app.use((req, res, next) => {
 });
 ```
 
-For the most flexibility, you can use `enforcer.processRequest(req)` only for validating a request
-and decide how to handle the result yourself, whether that be ending the request
-or ignoring the unauthorized error.
+For the most flexibility, you can use `enforcer.processRequest(req)` to only validate a request,
+allowing you to decide how to handle the validation result yourself, whether that be ending
+the request or ignoring the error.
 
 ```javascript
 app.use((req, res, next) => {
