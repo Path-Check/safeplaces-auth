@@ -57,6 +57,41 @@ const enforcer = new auth.Enforcer({
 enforcer.secure(app);
 ```
 
+For greater flexibility, you access the built-in `enforcer.handleRequest(req, res)`
+function to selectively handle requests under your own logic.
+
+```
+app.use((req, res, next) => {
+  if (req.headers['X-Bypass-Login']) {
+    return next();
+  } else {
+    return enforcer
+      // Enforcer ends the request with a `403 Forbidden` if it is unauthorized,
+      // meaning `next` will not be called unless the request is authorized.
+      .handleRequest(req, res)
+      .then(() => next())
+      .catch(err => next(err));
+  }
+});
+```
+
+For the most flexibility, you can use `enforcer.processRequest(req)` only for validating a request
+and decide how to handle the result yourself, whether that be ending the request
+or ignoring the unauthorized error.
+
+```
+app.use((req, res, next) => {
+  enforcer
+    .processRequest(req)
+    // `.then` is called only if `processRequest` has
+    // determined the request to be authorized.
+    .then(() => next())
+    // Otherwise, an error describing the validation error
+    // will be thrown, and you can decide what to do with it.
+    .catch(err => res.status(403).send('Forbidden'));
+});
+```
+
 ### Handling login requests
 
 ```javascript
@@ -77,7 +112,9 @@ const loginHandler = new auth.handlers.Login({
 });
 
 // Handle all requests to the login endpoint.
-app.post('/auth/login', loginHandler.handle);
+// Since we are passing around the `handle` function, make sure
+// to bind the handle function to its object.
+app.post('/auth/login', loginHandler.handle.bind(loginHandler));
 ```
 
 ### Handling logout requests
@@ -94,7 +131,9 @@ const logoutHandler = new auth.handlers.Logout({
 });
 
 // Handle all requests to the logout endpoint.
-app.get('/auth/logout', logoutHandler.handle);
+// Since we are passing around the `handle` function, make sure
+// to bind the handle function to its object.
+app.get('/auth/logout', logoutHandler.handle.bind(logoutHandler));
 ```
 
 ## Strategies
