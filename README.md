@@ -7,10 +7,10 @@ The modular authentication service for the SafePlaces backend.
 
 ```shell script
 # Install using NPM
-npm install @aiyan/safeplaces-auth
+npm install @pathcheck/safeplaces-auth
 
 # Install using Yarn
-yarn add @aiyan/safeplaces-auth
+yarn add @pathcheck/safeplaces-auth
 ```
 
 # Table of Contents
