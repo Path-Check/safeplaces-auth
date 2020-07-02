@@ -13,7 +13,7 @@ npm install @aiyan/safeplaces-auth
 yarn add @aiyan/safeplaces-auth
 ```
 
-## Table of Contents
+# Table of Contents
 * [Examples](#examples)
   * [Securing API endpoints](#securing-api-endpoints)
   * [Handling login requests](#handling-login-requests)
@@ -24,9 +24,9 @@ yarn add @aiyan/safeplaces-auth
   * [Dynamic strategy selection](#dynamic-strategy-selection)
 * [Debugging](#debugging)
 
-## Examples
+# Examples
 
-### Securing API endpoints
+## Securing API endpoints
 
 The authentication service can be instantiated and attached to an
 existing Express application. The point or order at which you attach
@@ -100,7 +100,7 @@ app.use((req, res, next) => {
 });
 ```
 
-### Handling login requests
+## Handling login requests
 
 ```javascript
 // Instantiate a login handler.
@@ -125,7 +125,7 @@ const loginHandler = new auth.handlers.Login({
 app.post('/auth/login', loginHandler.handle.bind(loginHandler));
 ```
 
-### Handling logout requests
+## Handling logout requests
 
 ```javascript
 // Instantiate a logout handler.
@@ -144,13 +144,13 @@ const logoutHandler = new auth.handlers.Logout({
 app.get('/auth/logout', logoutHandler.handle.bind(logoutHandler));
 ```
 
-## Strategies
+# Strategies
 
 **Supported strategies:**
 - Auth0 asymmetric JWT
 - Symmetric JWT
 
-### Auth0
+## Auth0
 
 Validate the JSON Web Token by checking the signature with
 the retrieved public key, and validate the API audience.
@@ -167,7 +167,7 @@ const auth0Strategy = new auth.strategies.Auth0({
 });
 ```
 
-### Symmetric JWT
+## Symmetric JWT
 
 Validate the JSON Web Token by checking the signature with
 a fixed private key.
@@ -181,7 +181,7 @@ const symJWTStrategy = new auth.strategies.SymJWT({
 });
 ```
 
-### Dynamic strategy selection
+## Dynamic strategy selection
 
 You can also pass a function into the strategy parameter
 to dynamically select the strategy based on the request
@@ -207,7 +207,7 @@ const enforcer = new auth.Enforcer({
 });
 ```
 
-## Debugging
+# Debugging
 
 To debug why the `enforcer` is rejecting a request, set the
 `AUTH_LOGGING` environment variable to `verbose`, and the request
