@@ -51,7 +51,7 @@ describe('login handler', () => {
             clientSecret: 'xyz',
           },
         },
-        'Auth0 DB connection is required',
+        'Auth0 realm is required',
       ],
     ];
     test.each(options)('when the attributes are %j', (opts, msg) => {

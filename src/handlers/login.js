@@ -19,7 +19,7 @@ class Login {
       throw new Error('Auth0 client secret is required');
     }
     if (!auth0.realm) {
-      throw new Error('Auth0 DB connection is required');
+      throw new Error('Auth0 realm is required');
     }
     this.auth0 = auth0;
     this.cookie = cookie || {
