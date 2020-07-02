@@ -194,3 +194,9 @@ const enforcer = new auth.Enforcer({
   },
 });
 ```
+
+## Debugging
+
+To debug why the `enforcer` is rejecting a request, set the
+`AUTH_LOGGING` environment variable to `verbose`, and the request
+validation error will be logged every time.
