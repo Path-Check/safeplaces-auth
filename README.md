@@ -5,17 +5,6 @@
 
 The modular authentication service for the SafePlaces backend.
 
-## Table of Contents
-* [Examples](#examples)
-  * [Securing API endpoints](#securing-api-endpoints)
-  * [Handling login requests](#handling-login-requests)
-  * [Handling logout requests](#handling-logout-requests)
-* [Strategies](#strategies)
-  * [Auth0](#auth0)
-  * [Symmetric JWT](#symmetric-jwt)
-  * [Dynamic strategy selection](#dynamic-strategy-selection)
-* [Debugging](#debugging)
-
 **Supported strategies:**
 - Auth0 asymmetric JWT
 - Symmetric JWT
@@ -27,6 +16,17 @@ npm install @aiyan/safeplaces-auth
 # Install using Yarn
 yarn add @aiyan/safeplaces-auth
 ```
+
+## Table of Contents
+* [Examples](#examples)
+  * [Securing API endpoints](#securing-api-endpoints)
+  * [Handling login requests](#handling-login-requests)
+  * [Handling logout requests](#handling-logout-requests)
+* [Strategies](#strategies)
+  * [Auth0](#auth0)
+  * [Symmetric JWT](#symmetric-jwt)
+  * [Dynamic strategy selection](#dynamic-strategy-selection)
+* [Debugging](#debugging)
 
 ## Examples
 
