@@ -58,7 +58,8 @@ enforcer.secure(app);
 ```
 
 For greater flexibility, you access the built-in `enforcer.handleRequest(req, res)`
-function to selectively handle requests under your own logic.
+function to selectively handle requests under your own logic. Note that `enforcer`
+will continue to end the request with `403 Forbidden` if the request is unauthorized.
 
 ```javascript
 app.use((req, res, next) => {
