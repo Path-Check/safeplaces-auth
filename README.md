@@ -67,7 +67,7 @@ const loginHandler = new auth.handlers.Login({
     apiAudience: process.env.AUTH0_API_AUDIENCE,
     clientId: process.env.AUTH0_CLIENT_ID,
     clientSecret: process.env.AUTH0_CLIENT_SECRET,
-    realm: process.env.AUTH0_DB_CONNECTION,
+    realm: process.env.AUTH0_REALM,
   },
   cookie: {
     // Enable/disable cookie attributes depending on environment.
