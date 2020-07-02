@@ -20,9 +20,5 @@ jobs:
       uses: actions/setup-node@v2.1.0
       with:
         node-version: 12.x
-    - uses: borales/actions-yarn@v2.3.0
-      with:
-        cmd: yarn install --frozen-lockfile
-    - uses: borales/actions-yarn@v2.3.0
-      with:
-        cmd: yarn coverage
+    - run: npm ci
+    - run: npm run coverage
