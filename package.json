@@ -1,5 +1,5 @@
 {
-  "name": "@aiyan/safeplaces-auth",
+  "name": "@pathcheck/safeplaces-auth",
   "version": "0.0.6",
   "description": "The modular authentication service for the SafePlaces backend.",
   "main": "src/index.js",
