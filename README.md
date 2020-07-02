@@ -60,7 +60,7 @@ enforcer.secure(app);
 For greater flexibility, you access the built-in `enforcer.handleRequest(req, res)`
 function to selectively handle requests under your own logic.
 
-```
+```javascript
 app.use((req, res, next) => {
   if (req.headers['X-Bypass-Login']) {
     return next();
@@ -79,7 +79,7 @@ For the most flexibility, you can use `enforcer.processRequest(req)` only for va
 and decide how to handle the result yourself, whether that be ending the request
 or ignoring the unauthorized error.
 
-```
+```javascript
 app.use((req, res, next) => {
   enforcer
     .processRequest(req)
