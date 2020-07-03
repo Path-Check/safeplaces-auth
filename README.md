@@ -34,7 +34,7 @@ the service relative to other middleware affects the point at which
 it is invoked.
 
 ```javascript
-const auth = require('@aiyan/safeplaces-auth');
+const auth = require('@pathcheck/safeplaces-auth');
 
 // Instantiate a public key retrieval client.
 const pkClient = new auth.JWKSClient(
@@ -156,7 +156,7 @@ Validate the JSON Web Token by checking the signature with
 the retrieved public key, and validate the API audience.
 
 ```javascript
-const auth = require('@aiyan/safeplaces-auth');
+const auth = require('@pathcheck/safeplaces-auth');
 
 const pkClient = new auth.JWKSClient(
   `${process.env.AUTH0_BASE_URL}/.well-known/jwks.json`,
@@ -173,7 +173,7 @@ Validate the JSON Web Token by checking the signature with
 a fixed private key.
 
 ```javascript
-const auth = require('@aiyan/safeplaces-auth');
+const auth = require('@pathcheck/safeplaces-auth');
 
 const symJWTStrategy = new auth.strategies.SymJWT({
   algorithm: 'HS256',
