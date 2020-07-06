@@ -1,7 +1,6 @@
 # SafePlaces Authentication Service
 
-[![Build Status](https://travis-ci.com/aiyan/safeplaces-auth.svg?branch=master)](https://travis-ci.com/aiyan/safeplaces-auth)
-[![Coverage Status](https://coveralls.io/repos/github/aiyan/safeplaces-auth/badge.svg?branch=master)](https://coveralls.io/github/aiyan/safeplaces-auth?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/Path-Check/safeplaces-auth/badge.svg?branch=master)](https://coveralls.io/github/Path-Check/safeplaces-auth?branch=master)
 
 The modular authentication service for the SafePlaces backend.
 
