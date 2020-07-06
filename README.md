@@ -1,5 +1,6 @@
 # SafePlaces Authentication Service
 
+[![Build Status](https://github.com/Path-Check/safeplaces-auth/workflows/Node.js%20CI/badge.svg)](https://github.com/Path-Check/safeplaces-auth/actions?query=workflow%3A%22Node.js+CI%22)
 [![Coverage Status](https://coveralls.io/repos/github/Path-Check/safeplaces-auth/badge.svg?branch=master)](https://coveralls.io/github/Path-Check/safeplaces-auth?branch=master)
 
 The modular authentication service for the SafePlaces backend.
