@@ -1,7 +1,7 @@
 # SafePlaces Authentication Service
 
-[![Build Status](https://travis-ci.com/aiyan/safeplaces-auth.svg?branch=master)](https://travis-ci.com/aiyan/safeplaces-auth)
-[![Coverage Status](https://coveralls.io/repos/github/aiyan/safeplaces-auth/badge.svg?branch=master)](https://coveralls.io/github/aiyan/safeplaces-auth?branch=master)
+[![Build Status](https://github.com/Path-Check/safeplaces-auth/workflows/Node.js%20CI/badge.svg)](https://github.com/Path-Check/safeplaces-auth/actions?query=workflow%3A%22Node.js+CI%22)
+[![Coverage Status](https://coveralls.io/repos/github/Path-Check/safeplaces-auth/badge.svg?branch=master)](https://coveralls.io/github/Path-Check/safeplaces-auth?branch=master)
 
 The modular authentication service for the SafePlaces backend.
 
@@ -34,7 +34,7 @@ the service relative to other middleware affects the point at which
 it is invoked.
 
 ```javascript
-const auth = require('@aiyan/safeplaces-auth');
+const auth = require('@pathcheck/safeplaces-auth');
 
 // Instantiate a public key retrieval client.
 const pkClient = new auth.JWKSClient(
@@ -156,7 +156,7 @@ Validate the JSON Web Token by checking the signature with
 the retrieved public key, and validate the API audience.
 
 ```javascript
-const auth = require('@aiyan/safeplaces-auth');
+const auth = require('@pathcheck/safeplaces-auth');
 
 const pkClient = new auth.JWKSClient(
   `${process.env.AUTH0_BASE_URL}/.well-known/jwks.json`,
@@ -173,7 +173,7 @@ Validate the JSON Web Token by checking the signature with
 a fixed private key.
 
 ```javascript
-const auth = require('@aiyan/safeplaces-auth');
+const auth = require('@pathcheck/safeplaces-auth');
 
 const symJWTStrategy = new auth.strategies.SymJWT({
   algorithm: 'HS256',
