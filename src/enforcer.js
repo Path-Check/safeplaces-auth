@@ -1,16 +1,20 @@
 const reqUtils = require('./requtils');
 
 class Enforcer {
-  constructor({ strategy, userGetter }) {
+  constructor({ strategy, userGetter, authorizer }) {
     if (!strategy) {
       throw new Error('Enforcer strategy is required');
     }
     if (!userGetter) {
       throw new Error('Enforcer user getter is required');
     }
+    if (authorizer && typeof authorizer !== 'function') {
+      throw new Error('Enforcer authorizer must be a function');
+    }
 
     this.strategy = strategy;
     this.userGetter = userGetter;
+    this.authorizer = authorizer;
     this.verbose = process.env.AUTH_LOGGING === 'verbose';
   }
 
@@ -18,18 +22,18 @@ class Enforcer {
     app.use(this.handleRequest.bind(this));
   }
 
-  handleRequest(req, res, next) {
-    return this.processRequest(req)
-      .then(() => {
-        if (!next) return;
-        next();
-      })
-      .catch(err => {
-        if (this.verbose) {
-          console.log(err);
-        }
-        res.status(403).send('Forbidden');
-      });
+  async handleRequest(req, res, next) {
+    try {
+      await this.processRequest(req);
+    } catch (e) {
+      if (this.verbose) {
+        console.log(e);
+      }
+      res.status(403).send('Forbidden');
+      return;
+    }
+    if (!next) return;
+    return next(req, res);
   }
 
   async processRequest(req) {
@@ -44,6 +48,10 @@ class Enforcer {
     const decoded = await strategy.validate(token);
 
     req.user = await this.userGetter(decoded.sub);
+
+    if (this.authorizer) {
+      this.authorizer(decoded, req);
+    }
   }
 }
 

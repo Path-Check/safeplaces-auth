@@ -64,6 +64,19 @@ describe('enforcer', () => {
         expect(err).toBeUndefined();
       });
   });
+
+  it('throws an error when the authorizer is not a function', () => {
+    try {
+      const enforcer = new Enforcer({
+        strategy: new Strategy(),
+        userGetter: () => null,
+        authorizer: 1,
+      });
+      expect(enforcer).toBeUndefined();
+    } catch (e) {
+      expect(e.message).toEqual('Enforcer authorizer must be a function');
+    }
+  });
 });
 
 describe('setup', () => {
@@ -304,6 +317,25 @@ describe('process request', () => {
       });
 
       return expectedResult(enforcer, strategy);
+    });
+  });
+
+  it('executes the authorizer function', () => {
+    const decoded = { id: 1 };
+    const user = { id: 2 };
+    const authorizer = jest.fn();
+
+    const enforcer = new Enforcer({
+      strategy: new Strategy(decoded),
+      userGetter: () => user,
+      authorizer,
+    });
+
+    const req = { cookies: { access_token: 'xyz' } };
+
+    return enforcer.processRequest(req).then(() => {
+      expect(authorizer).toHaveBeenCalledTimes(1);
+      expect(authorizer).toHaveBeenCalledWith(decoded, req);
     });
   });
 });
