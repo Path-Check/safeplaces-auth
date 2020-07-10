@@ -16,7 +16,7 @@
     "lint": "eslint",
     "format": "prettier --write \"**/*.{js,json}\"",
     "test": "jest",
-    "coverage": "jest --coverage && coveralls < coverage/lcov.info"
+    "coverage": "jest --coverage"
   },
   "files": [
     "src/**/*"
