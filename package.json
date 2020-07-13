@@ -1,6 +1,6 @@
 {
   "name": "@pathcheck/safeplaces-auth",
-  "version": "0.1.8",
+  "version": "0.1.11",
   "description": "The modular authentication service for the SafePlaces backend.",
   "main": "src/index.js",
   "license": "MIT",
