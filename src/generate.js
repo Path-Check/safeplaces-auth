@@ -5,7 +5,16 @@ function cookieString(attributes) {
   if (!attributes.name || !attributes.value) {
     throw new Error('Cookie name and value are required');
   }
-  const { name, value, expires, httpOnly, sameSite, path, secure } = attributes;
+  const {
+    name,
+    value,
+    expires,
+    httpOnly,
+    sameSite,
+    path,
+    secure,
+    domain,
+  } = attributes;
 
   let cookieString = `${name}=${value};`;
   if (expires) {
@@ -24,6 +33,9 @@ function cookieString(attributes) {
     cookieString += 'SameSite=Strict;';
   } else {
     cookieString += 'SameSite=None;';
+  }
+  if (domain) {
+    cookieString += `Domain=${domain};`;
   }
 
   return cookieString;

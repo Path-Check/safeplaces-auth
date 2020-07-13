@@ -46,7 +46,7 @@ describe('generate', () => {
 
     test('when same site and secure are true', () => {
       const expires = new Date(Date.now() + 60 * 1000 * 1000);
-      const expectedCookie = `some_cookie=some_value;Expires=${expires.toUTCString()};Path=/;HttpOnly;Secure;SameSite=Strict;`;
+      const expectedCookie = `some_cookie=some_value;Expires=${expires.toUTCString()};Path=/;HttpOnly;Secure;SameSite=Strict;Domain=test.com;`;
       const actualCookie = generate.cookieString({
         name: 'some_cookie',
         value: 'some_value',
@@ -55,6 +55,7 @@ describe('generate', () => {
         httpOnly: true,
         secure: true,
         sameSite: true,
+        domain: 'test.com',
       });
       expect(actualCookie).toEqual(expectedCookie);
     });
