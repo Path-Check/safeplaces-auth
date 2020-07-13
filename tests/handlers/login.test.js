@@ -108,9 +108,10 @@ describe('login handler', () => {
         realm: 'test',
       },
     });
+    const mockErr = new Error('Processing error');
     loginHandler.processRequest = async () => {
       await timeout(0);
-      throw new Error('Processing error');
+      throw mockErr;
     };
 
     const res = new Response();
@@ -124,6 +125,44 @@ describe('login handler', () => {
       })
       .catch(err => {
         expect(err).toBeUndefined();
+      });
+  });
+
+  it('enables verbose logging when the environment variable is set', () => {
+    const originalConsoleLog = console.log;
+    console.log = jest.fn();
+
+    process.env.AUTH_LOGGING = 'verbose';
+    const loginHandler = new handlers.Login({
+      auth0: {
+        baseUrl: 'https://example.com',
+        apiAudience: 'https://example.com/',
+        clientId: 'abc',
+        clientSecret: 'xyz',
+        realm: 'test',
+      },
+    });
+    expect(loginHandler.verbose).toBe(true);
+
+    const mockErr = new Error('Processing error');
+    loginHandler.processRequest = async () => {
+      await timeout(0);
+      throw mockErr;
+    };
+
+    const res = new Response();
+    return loginHandler
+      .handle({}, res)
+      .then(() => {
+        expect(console.log).toHaveBeenCalledTimes(1);
+        expect(console.log).toHaveBeenCalledWith(mockErr);
+      })
+      .catch(err => {
+        expect(err).toBeUndefined();
+      })
+      .finally(() => {
+        console.log = originalConsoleLog;
+        delete process.env.AUTH_LOGGING;
       });
   });
 });
@@ -233,6 +272,9 @@ describe('fetch access token', () => {
     const username = 'user1';
     const password = 'nop';
 
+    const originalConsoleLog = console.log;
+    console.log = jest.fn();
+
     const loginHandler = new handlers.Login({
       auth0: {
         baseUrl: 'https://example.com',
@@ -242,10 +284,13 @@ describe('fetch access token', () => {
         realm: 'test',
       },
     });
+    // Also test verbose logging.
+    loginHandler.verbose = true;
 
+    const mockRes = { test: 1 };
     fetch.mockImplementation(async () => {
       return {
-        json: () => ({}),
+        json: () => mockRes,
       };
     });
 
@@ -258,6 +303,9 @@ describe('fetch access token', () => {
         expect(data).toBeUndefined();
       })
       .catch(err => {
+        expect(console.log).toHaveBeenCalledTimes(1);
+        expect(console.log).toHaveBeenCalledWith(mockRes);
+        console.log = originalConsoleLog;
         expect(err.message).toEqual('Access token or expiration is missing');
       });
   });

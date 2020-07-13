@@ -26,6 +26,7 @@ class Login {
       sameSite: false,
       secure: false,
     };
+    this.verbose = process.env.AUTH_LOGGING === 'verbose';
   }
 
   handle(req, res) {
@@ -42,7 +43,10 @@ class Login {
         });
         res.status(204).header('Set-Cookie', cookieString).end();
       })
-      .catch(() => {
+      .catch(err => {
+        if (this.verbose) {
+          console.log(err);
+        }
         res.status(401).send('Unauthorized');
       });
   }
@@ -83,6 +87,7 @@ class Login {
     const accessToken = json['access_token'];
     const expiresIn = json['expires_in'];
     if (!accessToken || !expiresIn) {
+      console.log(json);
       throw new Error('Access token or expiration is missing');
     }
 
