@@ -40,6 +40,7 @@ class Login {
           httpOnly: true,
           sameSite: !!this.cookie.sameSite,
           secure: !!this.cookie.secure,
+          domain: this.cookie.domain,
         });
         res.status(204).header('Set-Cookie', cookieString).end();
       })
