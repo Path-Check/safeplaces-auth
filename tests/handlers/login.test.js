@@ -268,45 +268,77 @@ describe('fetch access token', () => {
       });
   });
 
-  it('throws an error when no access token was retrieved', () => {
+  describe('throws an error when no access token was retrieved', () => {
+    const mockRes = { test: 1 };
     const username = 'user1';
     const password = 'nop';
 
-    const originalConsoleLog = console.log;
-    console.log = jest.fn();
-
-    const loginHandler = new handlers.Login({
-      auth0: {
-        baseUrl: 'https://example.com',
-        apiAudience: 'https://example.com/',
-        clientId: 'abc',
-        clientSecret: 'xyz',
-        realm: 'test',
-      },
-    });
-    // Also test verbose logging.
-    loginHandler.verbose = true;
-
-    const mockRes = { test: 1 };
-    fetch.mockImplementation(async () => {
-      return {
-        json: () => mockRes,
-      };
-    });
-
-    return loginHandler
-      .fetchAccessToken({
-        username,
-        password,
-      })
-      .then(data => {
-        expect(data).toBeUndefined();
-      })
-      .catch(err => {
-        expect(console.log).toHaveBeenCalledTimes(1);
-        expect(console.log).toHaveBeenCalledWith(mockRes);
-        console.log = originalConsoleLog;
-        expect(err.message).toEqual('Access token or expiration is missing');
+    beforeAll(() => {
+      fetch.mockImplementation(async () => {
+        return {
+          json: () => mockRes,
+        };
       });
+    });
+
+    afterAll(() => {
+      fetch.mockRestore();
+    });
+
+    test('when logging is verbose', () => {
+      const originalConsoleLog = console.log;
+      console.log = jest.fn();
+
+      const loginHandler = new handlers.Login({
+        auth0: {
+          baseUrl: 'https://example.com',
+          apiAudience: 'https://example.com/',
+          clientId: 'abc',
+          clientSecret: 'xyz',
+          realm: 'test',
+        },
+      });
+      // Also test verbose logging.
+      loginHandler.verbose = true;
+
+      return loginHandler
+        .fetchAccessToken({
+          username,
+          password,
+        })
+        .then(data => {
+          expect(data).toBeUndefined();
+        })
+        .catch(err => {
+          expect(console.log).toHaveBeenCalledTimes(1);
+          expect(console.log).toHaveBeenCalledWith(mockRes);
+          console.log = originalConsoleLog;
+          expect(err.message).toEqual('Access token or expiration is missing');
+        });
+    });
+
+    test('when logging is normal', () => {
+      const loginHandler = new handlers.Login({
+        auth0: {
+          baseUrl: 'https://example.com',
+          apiAudience: 'https://example.com/',
+          clientId: 'abc',
+          clientSecret: 'xyz',
+          realm: 'test',
+        },
+      });
+
+      return loginHandler
+        .fetchAccessToken({
+          username,
+          password,
+        })
+        .then(data => {
+          expect(data).toBeUndefined();
+        })
+        .catch(err => {
+          expect(err.message).toEqual('Access token or expiration is missing');
+        });
+    });
   });
 });

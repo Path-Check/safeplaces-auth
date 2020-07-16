@@ -88,7 +88,9 @@ class Login {
     const accessToken = json['access_token'];
     const expiresIn = json['expires_in'];
     if (!accessToken || !expiresIn) {
-      console.log(json);
+      if (this.verbose) {
+        console.log(json);
+      }
       throw new Error('Access token or expiration is missing');
     }
 
