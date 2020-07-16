@@ -37,6 +37,8 @@ class Enforcer {
   }
 
   async processRequest(req) {
+    Enforcer.checkCSRF(req);
+
     // Try to obtain the token from the header.
     const token = reqUtils.sourceCookie(req);
 
@@ -51,6 +53,21 @@ class Enforcer {
 
     if (this.authorizer) {
       this.authorizer(decoded, req);
+    }
+  }
+
+  static checkCSRF(req) {
+    if (!req.headers) {
+      throw new Error('No headers found');
+    }
+    const csrfHeader = req.headers['x-requested-with'];
+    if (!csrfHeader) {
+      throw new Error('x-requested-with header not found');
+    }
+    if (csrfHeader !== 'XMLHttpRequest') {
+      throw new Error(
+        `Invalid value in x-requested-with header: ${csrfHeader}`,
+      );
     }
   }
 }

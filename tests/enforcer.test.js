@@ -270,14 +270,22 @@ describe('process request', () => {
     };
 
     function expectedResult(enforcer, strategy) {
-      return enforcer.processRequest(req).then(() => {
-        expect(strategy.validate).toBeCalledTimes(1);
-        expect(strategy.validate).toBeCalledWith(token);
+      const checkCSRF = Enforcer.checkCSRF;
+      Enforcer.checkCSRF = jest.fn();
 
-        const { user: testUser } = req;
-        expect(testUser).toBeDefined();
-        expect(testUser).toMatchObject(actualUser);
-      });
+      return enforcer
+        .processRequest(req)
+        .then(() => {
+          expect(strategy.validate).toBeCalledTimes(1);
+          expect(strategy.validate).toBeCalledWith(token);
+
+          const { user: testUser } = req;
+          expect(testUser).toBeDefined();
+          expect(testUser).toMatchObject(actualUser);
+        })
+        .finally(() => {
+          Enforcer.checkCSRF = checkCSRF;
+        });
     }
 
     test('when the strategy is static', () => {
@@ -333,9 +341,50 @@ describe('process request', () => {
 
     const req = { cookies: { access_token: 'xyz' } };
 
-    return enforcer.processRequest(req).then(() => {
-      expect(authorizer).toHaveBeenCalledTimes(1);
-      expect(authorizer).toHaveBeenCalledWith(decoded, req);
+    const checkCSRF = Enforcer.checkCSRF;
+    Enforcer.checkCSRF = jest.fn();
+
+    return enforcer
+      .processRequest(req)
+      .then(() => {
+        expect(authorizer).toHaveBeenCalledTimes(1);
+        expect(authorizer).toHaveBeenCalledWith(decoded, req);
+      })
+      .finally(() => {
+        Enforcer.checkCSRF = checkCSRF;
+      });
+  });
+});
+
+describe('CSRF check', () => {
+  describe('throws an error', () => {
+    const testTable = [
+      [{}, 'No headers found'],
+      [{ headers: {} }, 'x-requested-with header not found'],
+      [
+        {
+          headers: { 'x-requested-with': 1 },
+        },
+        'Invalid value in x-requested-with header: 1',
+      ],
+    ];
+
+    test.each(testTable)('when the request is %j', (req, msg) => {
+      try {
+        Enforcer.checkCSRF(req);
+        expect(true).toBe(false);
+      } catch (e) {
+        expect(e.message).toEqual(msg);
+      }
     });
+  });
+
+  describe('does not throw an error when the request is valid', () => {
+    Enforcer.checkCSRF({
+      headers: {
+        'x-requested-with': 'XMLHttpRequest',
+      },
+    });
+    expect(true).toBe(true);
   });
 });
