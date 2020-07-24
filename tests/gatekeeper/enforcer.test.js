@@ -1,11 +1,11 @@
-const timeout = require('./mocks/timeout');
-const Response = require('./mocks/response');
-const Enforcer = require('../src/enforcer');
-const userGetter = require('./mocks/usergetter');
-const Strategy = require('./mocks/strategy');
-const Application = require('./mocks/application');
+const timeout = require('../mocks/timeout');
+const Response = require('../mocks/response');
+const Enforcer = require('../../src/gatekeeper/enforcer');
+const userGetter = require('../mocks/usergetter');
+const Strategy = require('../mocks/strategy');
+const Application = require('../mocks/application');
 
-jest.mock('../src/strategies');
+jest.mock('../../src/gatekeeper/strategies');
 
 describe('enforcer', () => {
   it('throws an error when the strategy is missing', () => {
@@ -223,12 +223,7 @@ describe('process request', () => {
       },
     ];
     test.each(requests)('when the request is %j', req => {
-      return enforcer
-        .processRequest(req)
-        .then(() => expect(true).toBe(false))
-        .catch(err => {
-          expect(err).toBeDefined();
-        });
+      return expect(enforcer.processRequest(req)).rejects.toBeDefined();
     });
 
     test('when a token validation error is thrown', () => {
@@ -241,12 +236,13 @@ describe('process request', () => {
         userGetter: () => null,
       });
 
-      return enforcer
-        .processRequest({ cookies: { access_token: 'xyz' } })
-        .then(() => expect(true).toBe(false))
-        .catch(err => {
-          expect(err).toBeDefined();
-        });
+      return expect(
+        enforcer.processRequest({
+          cookies: {
+            access_token: 'xyz',
+          },
+        }),
+      ).rejects.toBeDefined();
     });
   });
 

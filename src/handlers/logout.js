@@ -1,4 +1,4 @@
-const generate = require('../generate');
+const generate = require('../common/generate');
 
 class Logout {
   constructor({ redirect, cookie }) {

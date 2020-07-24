@@ -1,5 +1,5 @@
 const jwks = require('jwks-rsa');
-const JWKSClient = require('../src/jwksclient');
+const JWKSClient = require('../../src/gatekeeper/jwksclient');
 
 jest.mock('jwks-rsa', () => jest.fn());
 

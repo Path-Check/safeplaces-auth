@@ -1,4 +1,4 @@
-const index = require('../src/index');
+const index = require('../../src/gatekeeper');
 
 describe('index', () => {
   it('exports the necessary modules', () => {

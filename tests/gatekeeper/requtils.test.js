@@ -1,5 +1,5 @@
-const reqUtils = require('../src/requtils');
-const mockRequest = require('./mocks/request');
+const reqUtils = require('../../src/gatekeeper/requtils');
+const mockRequest = require('../mocks/request');
 
 describe('source cookie', () => {
   describe('throws an error', () => {

@@ -1,6 +1,6 @@
-const generate = require('../src/generate');
+const generate = require('../../src/common/generate');
 
-describe('generate', () => {
+describe('cookieString', () => {
   it('throws an error when attributes are omitted', () => {
     try {
       const cookie = generate.cookieString();
@@ -59,5 +59,22 @@ describe('generate', () => {
       });
       expect(actualCookie).toEqual(expectedCookie);
     });
+  });
+});
+
+describe('password', () => {
+  it('throws an error when length is omitted', () => {
+    try {
+      const pass = generate.password();
+      expect(pass).toBeUndefined();
+    } catch (e) {
+      expect(e.message).toEqual('Password length is required');
+    }
+  });
+
+  it('generates a random password', () => {
+    const p1 = generate.password(8);
+    const p2 = generate.password(8);
+    expect(p1).not.toEqual(p2);
   });
 });

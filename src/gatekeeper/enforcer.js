@@ -1,4 +1,4 @@
-const reqUtils = require('./requtils');
+const requtils = require('./requtils');
 
 class Enforcer {
   constructor({ strategy, userGetter, authorizer }) {
@@ -40,7 +40,7 @@ class Enforcer {
     Enforcer.checkCSRF(req);
 
     // Try to obtain the token from the header.
-    const token = reqUtils.sourceCookie(req);
+    const token = requtils.sourceCookie(req);
 
     let strategy = this.strategy;
     if (typeof strategy === 'function') {

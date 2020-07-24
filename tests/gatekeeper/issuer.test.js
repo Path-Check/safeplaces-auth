@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const Issuer = require('../src/issuer');
+const Issuer = require('../../src/gatekeeper/issuer');
 
 describe('token issuer', () => {
   it('throws an error when the private key is missing', () => {

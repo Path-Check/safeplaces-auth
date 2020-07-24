@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const strategies = require('../../src/strategies');
+const strategies = require('../../../src/gatekeeper/strategies');
 
 describe('symmetric JWT strategy', () => {
   it('throws an error when the algorithm is missing', () => {
@@ -27,15 +27,11 @@ describe('symmetric JWT strategy', () => {
   it('accepts an array of algorithms', () => {
     const privateKey = 'xyz';
 
-    try {
-      const strategy = new strategies.SymJWT({
-        algorithm: ['HS256', 'ES256'],
-        privateKey,
-      });
-      expect(strategy).toBeDefined();
-    } catch (e) {
-      expect(e).toBeUndefined();
-    }
+    const strategy = new strategies.SymJWT({
+      algorithm: ['HS256', 'ES256'],
+      privateKey,
+    });
+    expect(strategy).toBeDefined();
   });
 
   it('rejects an invalid JWT', () => {
@@ -46,14 +42,7 @@ describe('symmetric JWT strategy', () => {
       privateKey,
     });
 
-    return strategy
-      .validate('abc')
-      .then(decoded => {
-        expect(decoded).toBeUndefined();
-      })
-      .catch(err => {
-        expect(err.message).toBeDefined();
-      });
+    return expect(strategy.validate('abc')).rejects.toBeDefined();
   });
 
   it('decodes a valid JWT', () => {
@@ -77,13 +66,6 @@ describe('symmetric JWT strategy', () => {
       expiresIn: '1h',
     });
 
-    return strategy
-      .validate(token)
-      .then(decoded => {
-        expect(decoded).toMatchObject(jwtClaims);
-      })
-      .catch(err => {
-        expect(err).toBeUndefined();
-      });
+    return expect(strategy.validate(token)).resolves.toMatchObject(jwtClaims);
   });
 });

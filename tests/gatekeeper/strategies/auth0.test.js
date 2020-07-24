@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
-const strategies = require('../../src/strategies');
-const keyPair = require('../mocks/keypair');
-const JWKSClient = require('../mocks/jwksclient');
+const strategies = require('../../../src/gatekeeper/strategies');
+const keyPair = require('../../mocks/keypair');
+const JWKSClient = require('../../mocks/jwksclient');
 
 describe('auth0 strategy', () => {
   const userId = 'user1';

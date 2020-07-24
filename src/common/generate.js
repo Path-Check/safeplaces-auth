@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 function cookieString(attributes) {
   if (!attributes) {
     throw new Error('Cookie attributes are required');
@@ -41,4 +43,16 @@ function cookieString(attributes) {
   return cookieString;
 }
 
-module.exports = { cookieString };
+function password(length) {
+  if (length === null || length === undefined) {
+    throw new Error('Password length is required');
+  }
+
+  return crypto
+    .randomBytes(length)
+    .toString('base64')
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .substr(0, length);
+}
+
+module.exports = { cookieString, password };

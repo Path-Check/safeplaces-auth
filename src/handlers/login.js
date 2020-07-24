@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const generate = require('../generate');
+const generate = require('../common/generate');
 
 class Login {
   constructor({ auth0, cookie }) {
@@ -21,12 +21,12 @@ class Login {
     if (!auth0.realm) {
       throw new Error('Auth0 realm is required');
     }
-    this.auth0 = auth0;
-    this.cookie = cookie || {
+    this._auth0 = auth0;
+    this._cookie = cookie || {
       sameSite: false,
       secure: false,
     };
-    this.verbose = process.env.AUTH_LOGGING === 'verbose';
+    this._verbose = process.env.AUTH_LOGGING === 'verbose';
   }
 
   handle(req, res) {
@@ -38,14 +38,14 @@ class Login {
           path: '/',
           expires: new Date(Date.now() + expiresIn * 1000),
           httpOnly: true,
-          sameSite: !!this.cookie.sameSite,
-          secure: !!this.cookie.secure,
-          domain: this.cookie.domain,
+          sameSite: !!this._cookie.sameSite,
+          secure: !!this._cookie.secure,
+          domain: this._cookie.domain,
         });
         res.status(204).header('Set-Cookie', cookieString).end();
       })
       .catch(err => {
-        if (this.verbose) {
+        if (this._verbose) {
           console.log(err);
         }
         res.status(401).send('Unauthorized');
@@ -66,20 +66,18 @@ class Login {
   }
 
   async fetchAccessToken({ username, password }) {
-    const params = new URLSearchParams();
-    params.append(
-      'grant_type',
-      'http://auth0.com/oauth/grant-type/password-realm',
-    );
-    params.append('username', username);
-    params.append('password', password);
-    params.append('audience', this.auth0.apiAudience);
-    params.append('client_id', this.auth0.clientId);
-    params.append('client_secret', this.auth0.clientSecret);
-    params.append('realm', this.auth0.realm);
-    params.append('scope', 'openid');
+    const params = new URLSearchParams({
+      grant_type: 'http://auth0.com/oauth/grant-type/password-realm',
+      username,
+      password,
+      audience: this._auth0.apiAudience,
+      client_id: this._auth0.clientId,
+      client_secret: this._auth0.clientSecret,
+      realm: this._auth0.realm,
+      scope: 'openid',
+    });
 
-    const response = await fetch(`${this.auth0.baseUrl}/oauth/token`, {
+    const response = await fetch(`${this._auth0.baseUrl}/oauth/token`, {
       method: 'POST',
       body: params,
     });
@@ -88,7 +86,7 @@ class Login {
     const accessToken = json['access_token'];
     const expiresIn = json['expires_in'];
     if (!accessToken || !expiresIn) {
-      if (this.verbose) {
+      if (this._verbose) {
         console.log(json);
       }
       throw new Error('Access token or expiration is missing');

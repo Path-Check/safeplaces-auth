@@ -1,13 +1,11 @@
-const strategies = require('./strategies');
+const gatekeeper = require('./gatekeeper');
+const manager = require('./manager');
+const common = require('./common');
 const handlers = require('./handlers');
-const Enforcer = require('./enforcer');
-const Issuer = require('./issuer');
-const JWKSClient = require('./jwksclient');
 
 module.exports = {
-  Enforcer,
-  Issuer,
-  JWKSClient,
-  strategies,
+  gatekeeper,
+  manager,
   handlers,
+  common,
 };

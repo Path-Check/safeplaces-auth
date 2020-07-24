@@ -142,7 +142,7 @@ describe('login handler', () => {
         realm: 'test',
       },
     });
-    expect(loginHandler.verbose).toBe(true);
+    expect(loginHandler._verbose).toBe(true);
 
     const mockErr = new Error('Processing error');
     loginHandler.processRequest = async () => {
@@ -299,7 +299,7 @@ describe('fetch access token', () => {
         },
       });
       // Also test verbose logging.
-      loginHandler.verbose = true;
+      loginHandler._verbose = true;
 
       return loginHandler
         .fetchAccessToken({
