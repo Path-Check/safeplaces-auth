@@ -22,18 +22,18 @@ class Enforcer {
     app.use(this.handleRequest.bind(this));
   }
 
-  async handleRequest(req, res, next) {
+  async handleRequest(req, res, fn) {
     try {
       await this.processRequest(req);
     } catch (e) {
       if (this.verbose) {
         console.log(e);
       }
-      res.status(403).send('Forbidden');
-      return;
+      return res.status(403).send('Forbidden');
     }
-    if (!next) return;
-    return next(req, res);
+    if (fn) {
+      return fn(req, res);
+    }
   }
 
   async processRequest(req) {
