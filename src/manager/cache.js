@@ -49,10 +49,10 @@ class Cache {
   async getAccessToken() {
     const now = Date.now();
     if (this._tokenExpiration - now < 2 * Time.MINUTE) {
-      // Refresh the token on demand.
+      // Refresh the token synchronously.
       await this.refreshAccessToken();
     } else if (this._tokenExpiration - now < 30 * Time.MINUTE) {
-      // Preemptively refresh the token.
+      // Preemptively refresh the token asynchronously.
       this.refreshAccessToken().then();
     }
 
