@@ -1,4 +1,5 @@
 const requtils = require('./requtils');
+const errors = require('./errors');
 
 class Enforcer {
   constructor({ strategy, userGetter, authorizer }) {
@@ -22,21 +23,32 @@ class Enforcer {
     app.use(this.handleRequest.bind(this));
   }
 
-  async handleRequest(req, res, fn) {
+  async handleRequest(req, res, next) {
     try {
-      await this.processRequest(req);
+      const note = await this.processRequest(req);
+      // Some problem was encountered, indicate this to the client via a header.
+      if (note) {
+        const errorCode = errors.lookup(note);
+        res.header(errors.getHeaderNS(), errorCode);
+      }
     } catch (e) {
       if (this.verbose) {
         console.log(e);
       }
-      return res.status(403).send('Forbidden');
+      const errorCode = errors.lookup(e.name);
+      return res
+        .status(403)
+        .header(errors.getHeaderNS(), errorCode)
+        .send('Forbidden');
     }
-    if (fn) {
-      return fn(req, res);
+    if (next) {
+      return next();
     }
   }
 
   async processRequest(req) {
+    let note = null;
+
     Enforcer.checkCSRF(req);
 
     // Try to obtain the token from the header.
@@ -49,23 +61,46 @@ class Enforcer {
     // Try to validate and decode the token.
     const decoded = await strategy.validate(token);
 
-    req.user = await this.userGetter(decoded.sub);
+    try {
+      const user = await this.userGetter(decoded.sub);
+      if (!user) {
+        if (this.verbose) {
+          console.error(
+            `Could not obtain user ${decoded.sub} from user getter`,
+          );
+        }
+        note = 'UserGetterNotFound';
+      }
+      req.user = user;
+    } catch (e) {
+      throw errors.construct('UserGetterFailure', e.message);
+    }
 
     if (this.authorizer) {
-      this.authorizer(decoded, req);
+      try {
+        this.authorizer(decoded, req);
+      } catch (e) {
+        throw errors.construct('AuthorizerFailure', e.message);
+      }
     }
+
+    return note;
   }
 
   static checkCSRF(req) {
     if (!req.headers) {
-      throw new Error('No headers found');
+      throw errors.construct('MissingHeaders', 'No headers found');
     }
     const csrfHeader = req.headers['x-requested-with'];
     if (!csrfHeader) {
-      throw new Error('x-requested-with header not found');
+      throw errors.construct(
+        'MissingCSRFHeader',
+        'x-requested-with header not found',
+      );
     }
     if (csrfHeader !== 'XMLHttpRequest') {
-      throw new Error(
+      throw errors.construct(
+        'InvalidCSRFHeader',
         `Invalid value in x-requested-with header: ${csrfHeader}`,
       );
     }

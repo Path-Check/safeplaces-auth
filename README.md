@@ -76,8 +76,7 @@ app.use((req, res, next) => {
     return enforcer
       // Enforcer ends the request with a `403 Forbidden` if it is unauthorized,
       // meaning `next` will not be called unless the request is authorized.
-      .handleRequest(req, res)
-      .then(() => next())
+      .handleRequest(req, res, next)
       .catch(err => next(err));
   }
 });
@@ -93,7 +92,13 @@ app.use((req, res, next) => {
     .processRequest(req)
     // `.then` is called only if `processRequest` has
     // determined the request to be authorized.
-    .then(() => next())
+    .then(note => {
+      // `note` is an error encountered by `processRequest` that may be indicated in server logs
+      // or in a request header. It was not enough to halt the request, but the server
+      // may encounter an unexpected error if logic continues.
+      console.log(note);
+      next();
+    })
     // Otherwise, an error describing the validation error
     // will be thrown, and you can decide what to do with it.
     .catch(err => res.status(403).send('Forbidden'));
