@@ -36,11 +36,26 @@ const SCHEMAS = {
         type: 'string',
         format: 'uuid',
       },
-      nickname: {
+      name: {
         type: 'string',
       },
     },
     required: ['id'],
+    additionalProperties: false,
+  }),
+  role: ajv.compile({
+    type: 'object',
+    properties: {
+      id: {
+        type: 'string',
+        format: 'uuid',
+      },
+      role: {
+        type: 'string',
+        enum: ['contact_tracer', 'admin', 'super_admin'],
+      },
+    },
+    required: ['id', 'role'],
     additionalProperties: false,
   }),
   create: ajv.compile({
@@ -241,7 +256,7 @@ class Users {
         }
 
         // Filter out other fields.
-        const user = utils.pick('email', 'email_verified', 'nickname')(rawUser);
+        const user = utils.pick('email', 'email_verified', 'name')(rawUser);
         user.id = id;
 
         res.status(200).json(user);
@@ -262,7 +277,7 @@ class Users {
             rawUsers.map(async rawUser => {
               // Filter out other fields.
               const user = utils.pick(
-                'nickname',
+                'name',
                 'email',
                 'email_verified',
               )(rawUser);
@@ -365,13 +380,13 @@ class Users {
   get handleUpdate() {
     return wrap({
       handler: async (req, res) => {
-        const { id: dbId, nickname } = req.body;
+        const { id: dbId, name } = req.body;
 
-        if (!nickname) {
+        if (!name) {
           return res.status(422).json({
             statusCode: 422,
             error: 'Unprocessable Entity',
-            message: 'specify one of: "nickname"',
+            message: 'specify one of: "name"',
             errorCode: 'missing_attributes',
           });
         }
@@ -383,11 +398,31 @@ class Users {
         }
 
         // Update the Auth0 user.
-        await this._connector.updateUser(idmId, { nickname });
+        await this._connector.updateUser(idmId, { name });
 
         res.status(204).end();
       },
       validator: SCHEMAS.update,
+    });
+  }
+
+  get handleAssignRole() {
+    return wrap({
+      handler: async (req, res) => {
+        const { id: dbId, role } = req.body;
+
+        // Convert the DB id to an IDM id.
+        const idmId = await this._hook.id.dbToIdm(dbId);
+        if (!idmId) {
+          return this._resNotFound(res);
+        }
+
+        // Update the Auth0 user.
+        await this._connector.assignRole(idmId, role);
+
+        res.status(204).end();
+      },
+      validator: SCHEMAS.role,
     });
   }
 

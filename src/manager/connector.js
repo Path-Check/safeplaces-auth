@@ -144,6 +144,14 @@ class Connector {
       email_verified: false,
     };
 
+    // someone@example.com
+    // ^^^^^^^
+    // Capture all characters preceding `@` in the email.
+    const nameMatch = /^([^@]+)/g.exec(email);
+    if (nameMatch) {
+      payload.name = nameMatch[1];
+    }
+
     let userId;
     try {
       const res = await this._fetchApi('POST', '/users', {
@@ -185,7 +193,7 @@ class Connector {
     const payload = {
       connection: this._realm,
     };
-    Object.assign(payload, utils.pick('nickname')(update));
+    Object.assign(payload, utils.pick('name')(update));
 
     try {
       await this._fetchApi('PATCH', `/users/${id}`, {
@@ -201,6 +209,18 @@ class Connector {
     let data;
     try {
       const res = await this._fetchApi('GET', '/roles');
+      data = await res.json();
+    } catch {
+      throw new Error('Unable to list roles');
+    }
+
+    return data;
+  }
+
+  async getUserRole(id) {
+    let data;
+    try {
+      const res = await this._fetchApi('GET', `/users/${id}/roles`);
       data = await res.json();
     } catch {
       throw new Error('Unable to list roles');

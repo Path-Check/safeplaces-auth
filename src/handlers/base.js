@@ -1,6 +1,6 @@
 const Ajv = require('ajv');
 
-const ajv = new Ajv({ allErrors: true, removeAdditional: true });
+const ajv = new Ajv({ allErrors: true });
 
 function wrap({ handler, validator }) {
   return (req, res, next) => {
