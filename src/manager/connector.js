@@ -114,6 +114,22 @@ class Connector {
     return data;
   }
 
+  async getRoles(id) {
+    if (!id) {
+      throw new Error('User id is required');
+    }
+
+    let data;
+    try {
+      const res = await this._fetchApi('GET', `/users/${id}/roles`);
+      data = await res.json();
+    } catch {
+      throw new Error('Unable to get user\'s roles');
+    }
+
+    return data;
+  }
+
   async listUsers() {
     const params = new URLSearchParams({
       search_engine: 'v3',
@@ -209,18 +225,6 @@ class Connector {
     let data;
     try {
       const res = await this._fetchApi('GET', '/roles');
-      data = await res.json();
-    } catch {
-      throw new Error('Unable to list roles');
-    }
-
-    return data;
-  }
-
-  async getUserRole(id) {
-    let data;
-    try {
-      const res = await this._fetchApi('GET', `/users/${id}/roles`);
       data = await res.json();
     } catch {
       throw new Error('Unable to list roles');

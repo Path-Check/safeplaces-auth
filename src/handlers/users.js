@@ -78,6 +78,8 @@ const SCHEMAS = {
   }),
 };
 
+const ROLE_RANKS = ['super_admin', 'admin', 'contact_tracer'];
+
 class Users {
   constructor({ auth0, hook, forceProblemResolution }) {
     if (!auth0) {
@@ -236,6 +238,16 @@ class Users {
     console.log('Synchronization problem resolution finished');
   }
 
+  static findHighestUserRole(roles) {
+    if (roles.length === 0) {
+      return null;
+    }
+    roles.sort((r1, r2) => {
+      return ROLE_RANKS.indexOf(r1.name) - ROLE_RANKS.indexOf(r2.name);
+    });
+    return roles[0].name;
+  }
+
   get handleGet() {
     return wrap({
       handler: async (req, res) => {
@@ -258,6 +270,10 @@ class Users {
         // Filter out other fields.
         const user = utils.pick('email', 'email_verified', 'name')(rawUser);
         user.id = id;
+
+        // Get the highest ranking role and set the role property.
+        let roles = await this._connector.getRoles(idmId);
+        user.role = Users.findHighestUserRole(roles);
 
         res.status(200).json(user);
       },
@@ -295,6 +311,10 @@ class Users {
               }
               user.id = dbId;
 
+              // Get the highest ranking role and set the role property.
+              let roles = await this._connector.getRoles(idmId);
+              user.role = Users.findHighestUserRole(roles);
+
               return user;
             }),
           );
@@ -309,6 +329,8 @@ class Users {
               message: 'user does not exist in database',
               errorCode: 'database_error',
             });
+          } else if (!this._verbose) {
+            console.error(e);
           }
         }
 
