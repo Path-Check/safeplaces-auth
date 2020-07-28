@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const errors = require('../errors');
 
 class Auth0 {
   constructor({ jwksClient, apiAudience }) {
@@ -18,7 +19,7 @@ class Auth0 {
           if (this.verbose) {
             console.log(err);
           }
-          callback(err);
+          return callback(errors.construct('JSONWebKeySet', err.message));
         });
     };
   }
@@ -33,7 +34,16 @@ class Auth0 {
           algorithms: ['RS256'],
         },
         (err, decoded) => {
-          if (err) return reject(err);
+          if (err) {
+            if (
+              err.message.startsWith('error in secret or public key callback')
+            ) {
+              return reject(errors.construct('JSONWebKeySet', err.message));
+            } else {
+              return reject(errors.construct('JSONWebToken', err.message));
+            }
+          }
+
           return resolve(decoded);
         },
       );

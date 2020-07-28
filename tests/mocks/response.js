@@ -14,6 +14,7 @@ function Response() {
     this.headers[header] = value;
     return this;
   });
+  this.set = this.header;
   this.redirect = jest.fn(url => {
     this.redirectUrl = url;
     return this;

@@ -1,5 +1,6 @@
 const fetch = require('node-fetch');
 const generate = require('../common/generate');
+const errors = require('../gatekeeper/errors');
 
 class Login {
   constructor({ auth0, cookie }) {
@@ -48,18 +49,25 @@ class Login {
         if (this._verbose) {
           console.log(err);
         }
-        res.status(401).send('Unauthorized');
+        const errorCode = errors.lookup(err.name);
+        res
+          .status(401)
+          .header(errors.getHeaderNS(), errorCode)
+          .send('Unauthorized');
       });
   }
 
   async processRequest(req) {
     if (!req.body) {
-      throw new Error('No request body found');
+      throw errors.construct('MissingRequestBody', 'No request body found');
     }
 
     const { username, password } = req.body;
     if (!username || !password) {
-      throw new Error('Username or password is missing');
+      throw errors.construct(
+        'MissingCredentials',
+        'Username or password is missing',
+      );
     }
 
     return this.fetchAccessToken({ username, password });
@@ -89,7 +97,10 @@ class Login {
       if (this._verbose) {
         console.log(json);
       }
-      throw new Error('Access token or expiration is missing');
+      throw errors.construct(
+        'Auth0Failure',
+        'Access token or expiration is missing',
+      );
     }
 
     return {
