@@ -80,6 +80,9 @@ class Enforcer {
       try {
         this.authorizer(decoded, req);
       } catch (e) {
+        if (this.verbose) {
+          console.log(e);
+        }
         throw errors.construct('AuthorizerFailure', e.message);
       }
     }

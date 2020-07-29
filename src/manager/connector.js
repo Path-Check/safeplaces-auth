@@ -233,7 +233,7 @@ class Connector {
     return data;
   }
 
-  async assignRole(userId, roleName) {
+  async assignRole(userId, roleName, newUser) {
     if (!userId) {
       throw new Error('User id is required');
     }
@@ -241,21 +241,24 @@ class Connector {
       throw new Error('Role name is required');
     }
 
-    // Get all currently assigned roles.
-    const currentRoles = (await this.getRoles(userId)).map(role => {
-      return role.id;
-    });
-
-    try {
-      // Remove all assigned roles.
-      await this._fetchApi('DELETE', `/users/${userId}/roles`, {
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          roles: currentRoles,
-        }),
+    // If the user is not new, remove all currently assigned roles.
+    if (!newUser) {
+      // Get all currently assigned roles.
+      const currentRoles = (await this.getRoles(userId)).map(role => {
+        return role.id;
       });
-    } catch (e) {
-      throw new Error('Unable to remove currently assigned roles');
+
+      try {
+        // Remove all assigned roles.
+        await this._fetchApi('DELETE', `/users/${userId}/roles`, {
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roles: currentRoles,
+          }),
+        });
+      } catch (e) {
+        throw new Error('Unable to remove currently assigned roles');
+      }
     }
 
     const roleId = this._cache.getRoleId(roleName);
