@@ -361,7 +361,7 @@ class Users {
 
         try {
           // Assign the correct role to the user.
-          await this._connector.assignRole(idmId, role);
+          await this._connector.assignRole(idmId, role, true);
         } catch (e) {
           // Something messed up, revert Auth0 user creation.
           if (this._verbose) {
