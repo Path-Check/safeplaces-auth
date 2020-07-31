@@ -1,11 +1,14 @@
+const WError = require('../../common/werror');
+const assert = require('assert');
 const jwt = require('jsonwebtoken');
-const errors = require('../errors');
 
 class Auth0 {
-  constructor({ jwksClient, apiAudience }) {
-    if (!jwksClient) {
-      throw new Error('JWKS client is required');
-    }
+  constructor(params) {
+    assert.ok(params, 'Auth0 parameters are required');
+
+    const { jwksClient, apiAudience } = params;
+    assert.ok(jwksClient, 'JWKS client is required');
+    assert.ok(apiAudience, 'API audience is required');
 
     this.jwksClient = jwksClient;
     this.apiAudience = apiAudience;
@@ -16,10 +19,13 @@ class Auth0 {
         .getSigningKey(header.kid)
         .then(key => callback(null, key))
         .catch(err => {
-          if (this.verbose) {
-            console.log(err);
-          }
-          return callback(errors.construct('JSONWebKeySet', err.message));
+          return callback(
+            new WError({
+              cause: err,
+              name: 'JWKSClientError',
+              message: 'error in secret or public key callback',
+            }),
+          );
         });
     };
   }
@@ -35,13 +41,13 @@ class Auth0 {
         },
         (err, decoded) => {
           if (err) {
-            if (
-              err.message.startsWith('error in secret or public key callback')
-            ) {
-              return reject(errors.construct('JSONWebKeySet', err.message));
-            } else {
-              return reject(errors.construct('JSONWebToken', err.message));
-            }
+            return reject(
+              new WError({
+                cause: err,
+                name: 'JWTValidationError',
+                message: 'JWT validation failed',
+              }),
+            );
           }
 
           return resolve(decoded);

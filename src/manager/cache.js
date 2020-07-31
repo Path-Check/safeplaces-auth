@@ -1,3 +1,4 @@
+const WError = require('../common/werror');
 const jwt = require('jsonwebtoken');
 
 const Time = {
@@ -21,7 +22,10 @@ class Cache {
 
   getRoleId(name) {
     if (!this.roleExists(name)) {
-      throw new Error(`Cannot find role with name "${name}"`);
+      throw new WError({
+        name: 'RoleNotFoundError',
+        message: `cannot find role: ${name}`,
+      });
     }
     return this._roles[name].id;
   }

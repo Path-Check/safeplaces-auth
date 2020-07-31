@@ -1,10 +1,9 @@
+const assert = require('assert');
 const jwks = require('jwks-rsa');
 
 class JWKSClient {
   constructor(jwksUri, client) {
-    if (!jwksUri) {
-      throw new Error('JWKS URI is required');
-    }
+    assert.ok(jwksUri, 'JWKS URI is required');
 
     this.jwksClient =
       client ||

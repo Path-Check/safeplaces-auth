@@ -1,27 +1,27 @@
 const fetch = require('node-fetch');
+const assert = require('assert');
+const WError = require('../common/werror');
+const Multifactor = require('../gatekeeper/multifactor');
 const generate = require('../common/generate');
-const errors = require('../gatekeeper/errors');
+const errorTranslator = require('../gatekeeper/errortranslator');
 
 class Login {
-  constructor({ auth0, cookie }) {
-    if (!auth0) {
-      throw new Error('Auth0 attribute is required');
-    }
-    if (!auth0.baseUrl) {
-      throw new Error('Auth0 base url is required');
-    }
-    if (!auth0.apiAudience) {
-      throw new Error('Auth0 API audience is required');
-    }
-    if (!auth0.clientId) {
-      throw new Error('Auth0 client id is required');
-    }
-    if (!auth0.clientSecret) {
-      throw new Error('Auth0 client secret is required');
-    }
-    if (!auth0.realm) {
-      throw new Error('Auth0 realm is required');
-    }
+  constructor(params) {
+    assert.ok(params, 'Auth0 parameters are required');
+
+    const { auth0, cookie } = params;
+    assert.ok(auth0, 'Auth0 attribute is required');
+    assert.ok(auth0.baseUrl, 'Auth0 base URL is required');
+    assert.ok(auth0.apiAudience, 'Auth0 API audience is required');
+    assert.ok(auth0.clientId, 'Auth0 client ID is required');
+    assert.ok(auth0.clientSecret, 'Auth0 client secret is required');
+    assert.ok(auth0.realm, 'Auth0 realm is required');
+
+    this.multifactor = new Multifactor({
+      baseUrl: auth0.baseUrl,
+      clientId: auth0.clientId,
+      clientSecret: auth0.clientSecret,
+    });
     this._auth0 = auth0;
     this._cookie = cookie || {
       sameSite: false,
@@ -31,43 +31,90 @@ class Login {
   }
 
   handle(req, res) {
-    return this.processRequest(req)
-      .then(({ accessToken, expiresIn }) => {
-        const cookieString = generate.cookieString({
-          name: 'access_token',
-          value: accessToken,
-          path: '/',
-          expires: new Date(Date.now() + expiresIn * 1000),
-          httpOnly: true,
-          sameSite: !!this._cookie.sameSite,
-          secure: !!this._cookie.secure,
-          domain: this._cookie.domain,
-        });
-        res.status(204).header('Set-Cookie', cookieString).end();
-      })
-      .catch(err => {
-        if (this._verbose) {
-          console.log(err);
-        }
-        const errorCode = errors.lookup(err.name);
-        res
-          .status(401)
-          .header(errors.getHeaderNS(), errorCode)
-          .send('Unauthorized');
-      });
+    return (
+      this.processRequest(req)
+        // .catch(err => {
+        //   if (!VError.hasCauseWithName('MFARequiredError')) {
+        //     throw err;
+        //   }
+        //
+        //   const { mfaToken } = VError.info(err);
+        //   // List MFA authenticators.
+        //   return this.multifactor.listAuthenticators(mfaToken)
+        //     .then(authenticators => {
+        //       if (authenticators.length === 0) {
+        //         res.status(401).json({
+        //           statusCode: 401,
+        //           error: 'Unauthorized',
+        //           message: 'no multifactor authenticator added',
+        //           errorCode: 'missing_mfa',
+        //         });
+        //         throw new VError({ name: 'MissingMfaError' }, 'no multifactor authenticator added');
+        //       }
+        //       const validAuthenticators = authenticators.filter(auth => {
+        //         return auth.authenticator_type === 'oob'
+        //           && auth.oob_channel === 'sms' && !!auth.active;
+        //       });
+        //       if (validAuthenticators.length === 0) {
+        //         res.status(401).json({
+        //           statusCode: 401,
+        //           error: 'Unauthorized',
+        //           message: 'no valid multifactor authenticator found',
+        //           errorCode: 'missing_mfa',
+        //         });
+        //         throw new VError({ name: 'MissingMfaError' }, 'no valid multifactor authenticator found');
+        //       }
+        //       const authId = validAuthenticators[0].id;
+        //
+        //       return this.multifactor.requestChallenge(mfaToken, authId);
+        //     })
+        //     .then(data => {
+        //
+        //     });
+        // })
+        .then(({ accessToken, expiresIn }) => {
+          const cookieString = generate.cookieString({
+            name: 'access_token',
+            value: accessToken,
+            path: '/',
+            expires: new Date(Date.now() + expiresIn * 1000),
+            httpOnly: true,
+            sameSite: !!this._cookie.sameSite,
+            secure: !!this._cookie.secure,
+            domain: this._cookie.domain,
+          });
+          res.status(204).header('Set-Cookie', cookieString).end();
+        })
+        .catch(err => {
+          // Ignore missing MFA errors.
+          if (WError.hasCauseWithName(err, 'MissingMfaError')) return;
+
+          if (this._verbose) {
+            console.log(err);
+          }
+          const errorCode = errorTranslator.lookup(err);
+          res
+            .status(401)
+            .header(errorTranslator.getHeaderNS(), errorCode)
+            .send('Unauthorized');
+        })
+    );
   }
 
   async processRequest(req) {
     if (!req.body) {
-      throw errors.construct('MissingRequestBody', 'No request body found');
+      throw new WError({
+        name: 'MissingBodyError',
+        message: 'no request body found',
+      });
     }
 
     const { username, password } = req.body;
     if (!username || !password) {
-      throw errors.construct(
-        'MissingCredentials',
-        'Username or password is missing',
-      );
+      throw new WError({
+        name: 'MissingCredentialsError',
+        message: 'username or password is missing',
+      });
     }
 
     return this.fetchAccessToken({ username, password });
@@ -85,22 +132,29 @@ class Login {
       scope: 'openid',
     });
 
-    const response = await fetch(`${this._auth0.baseUrl}/oauth/token`, {
+    const res = await fetch(`${this._auth0.baseUrl}/oauth/token`, {
       method: 'POST',
       body: params,
     });
-    const json = await response.json();
+    const json = await res.json();
 
-    const accessToken = json['access_token'];
-    const expiresIn = json['expires_in'];
+    if (json.error === 'mfa_required') {
+      const mfaToken = json.mfa_token;
+      throw new WError({
+        name: 'MFARequiredError',
+        message: 'multifactor authentication is required',
+        data: { mfaToken },
+      });
+    }
+
+    const accessToken = json.access_token;
+    const expiresIn = json.expires_in;
     if (!accessToken || !expiresIn) {
-      if (this._verbose) {
-        console.log(json);
-      }
-      throw errors.construct(
-        'Auth0Failure',
-        'Access token or expiration is missing',
-      );
+      throw new WError({
+        name: 'Auth0Error',
+        message: 'access token or expiration is missing',
+        data: { res: json },
+      });
     }
 
     return {

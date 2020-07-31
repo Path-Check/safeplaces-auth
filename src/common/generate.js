@@ -1,12 +1,13 @@
+const assert = require('assert');
 const crypto = require('crypto');
 
 function cookieString(attributes) {
-  if (!attributes) {
-    throw new Error('Cookie attributes are required');
-  }
-  if (!attributes.name || !attributes.value) {
-    throw new Error('Cookie name and value are required');
-  }
+  assert.ok(attributes, 'cookie attributes are required');
+  assert.ok(
+    attributes.name && attributes.value,
+    'cookie name and value are required',
+  );
+
   const {
     name,
     value,
@@ -44,9 +45,7 @@ function cookieString(attributes) {
 }
 
 function password(length) {
-  if (length === null || length === undefined) {
-    throw new Error('Password length is required');
-  }
+  assert.ok(length, 'password length is required');
 
   return crypto
     .randomBytes(length)

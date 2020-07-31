@@ -9,7 +9,7 @@ class JWKSClient {
   async getSigningKey(keyId) {
     await timeout(0);
     if (this.keyId !== keyId) {
-      throw new Error('Key id mismatch');
+      throw new Error('key id mismatch');
     }
     return this.publicKey;
   }

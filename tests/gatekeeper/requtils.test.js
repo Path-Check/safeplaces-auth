@@ -9,7 +9,7 @@ describe('source cookie', () => {
         const testToken = reqUtils.sourceCookie(req);
         expect(testToken).toBeUndefined();
       } catch (e) {
-        expect(e.message).toEqual('No cookies found');
+        expect(e.message).toEqual('no cookies found');
       }
     });
 
@@ -21,7 +21,7 @@ describe('source cookie', () => {
         const testToken = reqUtils.sourceCookie(req);
         expect(testToken).toBeUndefined();
       } catch (e) {
-        expect(e.message).toEqual('No access token found in cookie');
+        expect(e.message).toEqual('no access token found in cookie');
       }
     });
   });
@@ -46,7 +46,7 @@ describe('source header', () => {
         const testToken = reqUtils.sourceHeader(req);
         expect(testToken).toBeUndefined();
       } catch (e) {
-        expect(e.message).toEqual('No headers found');
+        expect(e.message).toEqual('no headers found');
       }
     });
 
@@ -60,7 +60,7 @@ describe('source header', () => {
         const testToken = reqUtils.sourceHeader(req);
         expect(testToken).toBeUndefined();
       } catch (e) {
-        expect(e.message).toEqual('No authorization header found');
+        expect(e.message).toEqual('no authorization header found');
       }
     });
 
@@ -74,7 +74,7 @@ describe('source header', () => {
         const testToken = reqUtils.sourceHeader(req);
         expect(testToken).toBeUndefined();
       } catch (e) {
-        expect(e.message).toEqual('No access token found in header');
+        expect(e.message).toEqual('no access token found in header');
       }
     });
   });

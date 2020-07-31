@@ -7,7 +7,7 @@ describe('logout handler', () => {
       const logoutHandler = new handlers.Logout({});
       expect(logoutHandler).toBeUndefined();
     } catch (e) {
-      expect(e.message).toEqual('Logout redirect URL is required');
+      expect(e.message).toEqual('logout redirect URL is required');
     }
   });
 

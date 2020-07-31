@@ -1,30 +1,21 @@
 const Cache = require('./cache');
+const WError = require('../common/werror');
 const fetch = require('node-fetch');
+const assert = require('assert');
 const generate = require('../common/generate');
 const utils = require('../common/utils');
 
 class Connector {
   constructor(params) {
-    if (!params) {
-      throw new Error('Connector parameters are required');
-    }
+    assert.ok(params, 'connector parameters are required');
 
     const { baseUrl, clientId, clientSecret, apiAudience, realm } = params;
-    if (!baseUrl) {
-      throw new Error('Auth0 base URL is required');
-    }
-    if (!clientId) {
-      throw new Error('Auth0 client id is required');
-    }
-    if (!clientSecret) {
-      throw new Error('Auth0 client secret is required');
-    }
-    if (!apiAudience) {
-      throw new Error('Auth0 API audience is required');
-    }
-    if (!realm) {
-      throw new Error('Auth0 realm is required');
-    }
+    assert.ok(baseUrl, 'Auth0 base URL is required');
+    assert.ok(clientId, 'Auth0 client ID is required');
+    assert.ok(clientSecret, 'Auth0 client secret is required');
+    assert.ok(apiAudience, 'Auth0 API audience is required');
+    assert.ok(realm, 'Auth0 realm is required');
+
     this._baseUrl = baseUrl;
     this._clientId = clientId;
     this._clientSecret = clientSecret;
@@ -57,13 +48,14 @@ class Connector {
     });
     const json = await response.json();
 
-    const accessToken = json['access_token'];
-    const tokenType = json['token_type'];
+    const accessToken = json.access_token;
+    const tokenType = json.token_type;
     if (!accessToken || tokenType !== 'Bearer') {
-      if (this._verbose) {
-        console.log(json);
-      }
-      throw new Error('Access token missing or token type not matching');
+      throw new WError({
+        name: 'Auth0Error',
+        message: 'access token missing or token type not matching',
+        data: json,
+      });
     }
 
     return accessToken;
@@ -86,45 +78,47 @@ class Connector {
 
     if (!res.ok) {
       const errData = await res.json();
-      if (this._verbose) {
-        console.error(errData);
-      }
-      throw {
-        error: new Error('API call failed'),
+      throw new WError({
+        name: 'Auth0Error',
+        message: 'API call failed',
         data: errData,
-      };
+      });
     }
 
     return res;
   }
 
   async getUser(id) {
-    if (!id) {
-      throw new Error('User id is required');
-    }
+    assert.ok(id, 'user ID is required');
 
     let data;
     try {
       const res = await this._fetchApi('GET', `/users/${id}`);
       data = await res.json();
-    } catch {
-      throw new Error('Unable to get user');
+    } catch (e) {
+      throw new WError({
+        name: 'Auth0Error',
+        message: 'unable to get user',
+        cause: e,
+      });
     }
 
     return data;
   }
 
   async getRoles(id) {
-    if (!id) {
-      throw new Error('User id is required');
-    }
+    assert.ok(id, 'user ID is required');
 
     let data;
     try {
       const res = await this._fetchApi('GET', `/users/${id}/roles`);
       data = await res.json();
-    } catch {
-      throw new Error("Unable to get user's roles");
+    } catch (e) {
+      throw new WError({
+        name: 'Auth0Error',
+        message: 'unable to get roles of user',
+        cause: e,
+      });
     }
 
     return data;
@@ -140,17 +134,19 @@ class Connector {
     try {
       const res = await this._fetchApi('GET', `/users?${params}`);
       data = await res.json();
-    } catch {
-      throw new Error('Unable to list users');
+    } catch (e) {
+      throw new WError({
+        name: 'Auth0Error',
+        message: 'unable to list users',
+        cause: e,
+      });
     }
 
     return data;
   }
 
   async createUser(email) {
-    if (!email) {
-      throw new Error('Email is required');
-    }
+    assert.ok(email, 'email is required');
 
     const payload = {
       email,
@@ -178,33 +174,43 @@ class Connector {
       userId = data['user_id'];
     } catch (e) {
       if (e.data.statusCode === 409) {
-        throw new Error('User already exists');
+        throw new WError({
+          name: 'ConflictError',
+          message: 'user already exists',
+          cause: e,
+        });
       }
-      throw new Error('Unable to create user');
+      throw new WError({
+        name: 'Auth0Error',
+        message: 'unable to create user',
+        cause: e,
+      });
     }
 
     return userId;
   }
 
   async deleteUser(id) {
-    if (!id) {
-      throw new Error('User id is required');
-    }
+    assert.ok(id, 'user ID is required');
 
     try {
       await this._fetchApi('DELETE', `/users/${id}`);
-    } catch {
-      throw new Error('Unable to delete user');
+    } catch (e) {
+      throw new WError({
+        name: 'Auth0Error',
+        message: 'unable to delete user',
+        cause: e,
+      });
     }
   }
 
   async updateUser(id, update) {
-    if (!id) {
-      throw new Error('User id is required');
-    }
-    if (update.constructor !== Object) {
-      throw new Error(`Invalid update: ${update}. Expected an object`);
-    }
+    assert.ok(id, 'user ID is required');
+    assert.strictEqual(
+      update.constructor,
+      Object,
+      `Invalid update: ${update}. Expected an object`,
+    );
 
     const payload = {
       connection: this._realm,
@@ -216,8 +222,12 @@ class Connector {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-    } catch {
-      throw new Error('Unable to update user');
+    } catch (e) {
+      throw new WError({
+        name: 'Auth0Error',
+        message: 'unable to update user',
+        cause: e,
+      });
     }
   }
 
@@ -226,20 +236,20 @@ class Connector {
     try {
       const res = await this._fetchApi('GET', '/roles');
       data = await res.json();
-    } catch {
-      throw new Error('Unable to list roles');
+    } catch (e) {
+      throw new WError({
+        name: 'Auth0Error',
+        message: 'unable to list roles',
+        cause: e,
+      });
     }
 
     return data;
   }
 
   async assignRole(userId, roleName, newUser) {
-    if (!userId) {
-      throw new Error('User id is required');
-    }
-    if (!roleName) {
-      throw new Error('Role name is required');
-    }
+    assert.ok(userId, 'user ID is required');
+    assert.ok(roleName, 'role name is required');
 
     // If the user is not new, remove all currently assigned roles.
     if (!newUser) {
@@ -257,13 +267,20 @@ class Connector {
           }),
         });
       } catch (e) {
-        throw new Error('Unable to remove currently assigned roles');
+        throw new WError({
+          name: 'Auth0Error',
+          message: 'unable to remove currently assigned roles',
+          cause: e,
+        });
       }
     }
 
     const roleId = this._cache.getRoleId(roleName);
     if (!roleId) {
-      throw new Error(`Unable to get id of role ${roleName}`);
+      throw new WError({
+        name: 'NotFoundError',
+        message: `unable to get ID of role ${roleName}`,
+      });
     }
 
     const payload = {
@@ -275,22 +292,25 @@ class Connector {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-    } catch {
-      throw new Error('Unable to assign role to user');
+    } catch (e) {
+      throw new WError({
+        name: 'Auth0Error',
+        message: 'unable to assign role to user',
+        cause: e,
+      });
     }
   }
 
   async removeRole(userId, roleName) {
-    if (!userId) {
-      throw new Error('User id is required');
-    }
-    if (!roleName) {
-      throw new Error('Role name is required');
-    }
+    assert.ok(userId, 'user ID is required');
+    assert.ok(roleName, 'role name is required');
 
     const roleId = this._cache.getRoleId(roleName);
     if (!roleId) {
-      throw new Error(`Unable to get id of role ${roleName}`);
+      throw new WError({
+        name: 'NotFoundError',
+        message: `unable to get ID of role ${roleName}`,
+      });
     }
 
     const payload = {
@@ -302,15 +322,40 @@ class Connector {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-    } catch {
-      throw new Error('Unable to remove role from user');
+    } catch (e) {
+      throw new WError({
+        name: 'Auth0Error',
+        message: 'unable to remove role from user',
+        cause: e,
+      });
     }
   }
 
-  async sendPasswordResetEmail(email) {
-    if (!email) {
-      throw new Error('Email is required');
+  async createEmailVerificationTicket(id) {
+    let data;
+
+    try {
+      const res = await this._fetchApi('POST', `/tickets/email-verification`, {
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: id,
+          result_url: 'http://localhost:3000',
+        }),
+      });
+      data = await res.json();
+    } catch (e) {
+      throw new WError({
+        name: 'Auth0Error',
+        message: 'unable to create email verification ticket',
+        cause: e,
+      });
     }
+
+    return data;
+  }
+
+  async sendPasswordResetEmail(email) {
+    assert.ok(email, 'email is required');
 
     const payload = {
       email,
@@ -325,15 +370,18 @@ class Connector {
     });
 
     if (!res.ok) {
-      if (this._verbose) {
-        console.error(await res.json());
-      }
+      const errData = await res.json();
       if (res.status === 429) {
-        throw new Error(
-          'Unable to send password reset email, too many requests',
-        );
+        throw new WError({
+          name: 'TooManyRequestsError',
+          message: 'unable to send password reset email, too many requests',
+        });
       }
-      throw new Error('Unable to send password reset email');
+      throw new WError({
+        name: 'Auth0Error',
+        message: 'unable to send password reset email',
+        data: errData,
+      });
     }
   }
 }

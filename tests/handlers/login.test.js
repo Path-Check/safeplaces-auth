@@ -13,7 +13,7 @@ describe('login handler', () => {
         {
           auth0: {},
         },
-        'Auth0 base url is required',
+        'Auth0 base URL is required',
       ],
       [
         {
@@ -30,7 +30,7 @@ describe('login handler', () => {
             apiAudience: 'https://example.com/',
           },
         },
-        'Auth0 client id is required',
+        'Auth0 client ID is required',
       ],
       [
         {
@@ -181,12 +181,12 @@ describe('process request', () => {
     loginHandler.fetchAccessToken = jest.fn();
 
     const requests = [
-      [{}, 'No request body found'],
+      [{}, 'no request body found'],
       [
         {
           body: {},
         },
-        'Username or password is missing',
+        'username or password is missing',
       ],
     ];
 
@@ -285,38 +285,6 @@ describe('fetch access token', () => {
       fetch.mockRestore();
     });
 
-    test('when logging is verbose', () => {
-      const originalConsoleLog = console.log;
-      console.log = jest.fn();
-
-      const loginHandler = new handlers.Login({
-        auth0: {
-          baseUrl: 'https://example.com',
-          apiAudience: 'https://example.com/',
-          clientId: 'abc',
-          clientSecret: 'xyz',
-          realm: 'test',
-        },
-      });
-      // Also test verbose logging.
-      loginHandler._verbose = true;
-
-      return loginHandler
-        .fetchAccessToken({
-          username,
-          password,
-        })
-        .then(data => {
-          expect(data).toBeUndefined();
-        })
-        .catch(err => {
-          expect(console.log).toHaveBeenCalledTimes(1);
-          expect(console.log).toHaveBeenCalledWith(mockRes);
-          console.log = originalConsoleLog;
-          expect(err.message).toEqual('Access token or expiration is missing');
-        });
-    });
-
     test('when logging is normal', () => {
       const loginHandler = new handlers.Login({
         auth0: {
@@ -337,7 +305,7 @@ describe('fetch access token', () => {
           expect(data).toBeUndefined();
         })
         .catch(err => {
-          expect(err.message).toEqual('Access token or expiration is missing');
+          expect(err.message).toEqual('access token or expiration is missing');
         });
     });
   });
