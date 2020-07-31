@@ -6,7 +6,7 @@ describe('cookieString', () => {
       const cookie = generate.cookieString();
       expect(cookie).toBeUndefined();
     } catch (e) {
-      expect(e.message).toEqual('Cookie attributes are required');
+      expect(e.message).toEqual('cookie attributes are required');
     }
   });
 
@@ -17,7 +17,7 @@ describe('cookieString', () => {
       });
       expect(cookie).toBeUndefined();
     } catch (e) {
-      expect(e.message).toEqual('Cookie name and value are required');
+      expect(e.message).toEqual('cookie name and value are required');
     }
   });
 
@@ -68,7 +68,7 @@ describe('password', () => {
       const pass = generate.password();
       expect(pass).toBeUndefined();
     } catch (e) {
-      expect(e.message).toEqual('Password length is required');
+      expect(e.message).toEqual('password length is required');
     }
   });
 

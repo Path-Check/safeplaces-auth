@@ -1,16 +1,22 @@
+const assert = require('assert');
+const WError = require('../common/werror');
 const requtils = require('./requtils');
-const errors = require('./errors');
+const errorTranslator = require('./errortranslator');
 
 class Enforcer {
-  constructor({ strategy, userGetter, authorizer }) {
-    if (!strategy) {
-      throw new Error('Enforcer strategy is required');
-    }
-    if (!userGetter) {
-      throw new Error('Enforcer user getter is required');
-    }
-    if (authorizer && typeof authorizer !== 'function') {
-      throw new Error('Enforcer authorizer must be a function');
+  constructor(params) {
+    assert.ok(params, 'enforcer parameters are required');
+
+    const { strategy, userGetter, authorizer } = params;
+    assert.ok(strategy, 'enforcer strategy is required');
+    assert.ok(userGetter, 'enforcer user getter is required');
+
+    if (authorizer) {
+      assert.strictEqual(
+        typeof authorizer,
+        'function',
+        'enforcer authorizer must be a function',
+      );
     }
 
     this.strategy = strategy;
@@ -25,20 +31,15 @@ class Enforcer {
 
   async handleRequest(req, res, next) {
     try {
-      const note = await this.processRequest(req);
-      // Some problem was encountered, indicate this to the client via a header.
-      if (note) {
-        const errorCode = errors.lookup(note);
-        res.header(errors.getHeaderNS(), errorCode);
-      }
+      await this.processRequest(req);
     } catch (e) {
       if (this.verbose) {
         console.log(e);
       }
-      const errorCode = errors.lookup(e.name);
+      const errorCode = errorTranslator.lookup(e);
       return res
         .status(403)
-        .header(errors.getHeaderNS(), errorCode)
+        .header(errorTranslator.getHeaderNS(), errorCode)
         .send('Forbidden');
     }
     if (next) {
@@ -47,8 +48,6 @@ class Enforcer {
   }
 
   async processRequest(req) {
-    let note = null;
-
     Enforcer.checkCSRF(req);
 
     // Try to obtain the token from the header.
@@ -61,20 +60,24 @@ class Enforcer {
     // Try to validate and decode the token.
     const decoded = await strategy.validate(token);
 
+    let user;
     try {
-      const user = await this.userGetter(decoded.sub);
-      if (!user) {
-        if (this.verbose) {
-          console.error(
-            `Could not obtain user ${decoded.sub} from user getter`,
-          );
-        }
-        note = 'UserGetterNotFound';
-      }
-      req.user = user;
+      user = await this.userGetter(decoded.sub);
     } catch (e) {
-      throw errors.construct('UserGetterFailure', e.message);
+      throw new WError({
+        name: 'UserGetterError',
+        message: 'user getter threw an error',
+        cause: e,
+      });
     }
+
+    if (!user) {
+      throw new WError({
+        name: 'UserGetterError',
+        message: 'user getter not found',
+      });
+    }
+    req.user = user;
 
     if (this.authorizer) {
       try {
@@ -83,29 +86,34 @@ class Enforcer {
         if (this.verbose) {
           console.log(e);
         }
-        throw errors.construct('AuthorizerFailure', e.message);
+        throw new WError({
+          name: 'AuthorizerError',
+          message: 'authorizer threw an error',
+          cause: e,
+        });
       }
     }
-
-    return note;
   }
 
   static checkCSRF(req) {
     if (!req.headers) {
-      throw errors.construct('MissingHeaders', 'No headers found');
+      throw new WError({
+        name: 'MissingHeadersError',
+        message: 'no headers found',
+      });
     }
     const csrfHeader = req.headers['x-requested-with'];
     if (!csrfHeader) {
-      throw errors.construct(
-        'MissingCSRFHeader',
-        'x-requested-with header not found',
-      );
+      throw new WError({
+        name: 'MissingCSRFHeaderError',
+        message: 'x-requested-with header not found',
+      });
     }
     if (csrfHeader !== 'XMLHttpRequest') {
-      throw errors.construct(
-        'InvalidCSRFHeader',
-        `Invalid value in x-requested-with header: ${csrfHeader}`,
-      );
+      throw new WError({
+        name: 'InvalidCSRFHeaderError',
+        message: 'invalid value in x-requested-with header: ' + csrfHeader,
+      });
     }
   }
 }

@@ -3,9 +3,9 @@ const Connector = require('../../src/manager/connector');
 describe('constructor', () => {
   describe('throws an error', () => {
     const testTable = [
-      [undefined, 'Connector parameters are required'],
+      [undefined, 'connector parameters are required'],
       [{}, 'Auth0 base URL is required'],
-      [{ baseUrl: 'a' }, 'Auth0 client id is required'],
+      [{ baseUrl: 'a' }, 'Auth0 client ID is required'],
       [
         {
           baseUrl: 'a',

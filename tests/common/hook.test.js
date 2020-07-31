@@ -5,8 +5,8 @@ describe('constructor', () => {
 
   describe('throws an error', () => {
     const testTable = [
-      [null, 'Callbacks are required'],
-      [{}, 'Id translation callbacks are required'],
+      [null, 'callbacks are required'],
+      [{}, 'ID translation callbacks are required'],
       [{ id: {} }, 'DB to IDM id translation callback is required'],
       [
         {
@@ -38,7 +38,7 @@ describe('constructor', () => {
             idmToDb: fn,
           },
         },
-        'User modification callbacks are required',
+        'user modification callbacks are required',
       ],
       [
         {
@@ -48,7 +48,7 @@ describe('constructor', () => {
           },
           users: {},
         },
-        'User creation callback is required',
+        'user creation callback is required',
       ],
       [
         {
@@ -60,7 +60,7 @@ describe('constructor', () => {
             create: 1,
           },
         },
-        'User creation callback should be a function',
+        'user creation callback should be a function',
       ],
       [
         {
@@ -72,7 +72,7 @@ describe('constructor', () => {
             create: fn,
           },
         },
-        'User deletion callback is required',
+        'user deletion callback is required',
       ],
       [
         {
@@ -85,7 +85,7 @@ describe('constructor', () => {
             delete: 1,
           },
         },
-        'User deletion callback should be a function',
+        'user deletion callback should be a function',
       ],
       [
         {
@@ -98,7 +98,7 @@ describe('constructor', () => {
             delete: fn,
           },
         },
-        'User get all callback is required',
+        'user get all callback is required',
       ],
       [
         {
@@ -112,7 +112,7 @@ describe('constructor', () => {
             getAll: 1,
           },
         },
-        'User get all callback should be a function',
+        'user get all callback should be a function',
       ],
     ];
 

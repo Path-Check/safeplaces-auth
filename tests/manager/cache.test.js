@@ -35,9 +35,7 @@ describe('refresh roles', () => {
         expect(cache.roleExists('inexistent_role')).toBe(false);
         expect(cache.getRoleId('inexistent_role')).toBeUndefined();
       } catch (e) {
-        expect(e.message).toEqual(
-          'Cannot find role with name "inexistent_role"',
-        );
+        expect(e.message).toEqual('cannot find role: inexistent_role');
       }
 
       expect(cache.roleExists('admin')).toBe(true);

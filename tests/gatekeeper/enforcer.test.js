@@ -15,7 +15,7 @@ describe('enforcer', () => {
       });
       expect(enforcer).toBeUndefined();
     } catch (e) {
-      expect(e.message).toEqual('Enforcer strategy is required');
+      expect(e.message).toEqual('enforcer strategy is required');
     }
   });
 
@@ -26,7 +26,7 @@ describe('enforcer', () => {
       });
       expect(enforcer).toBeUndefined();
     } catch (e) {
-      expect(e.message).toEqual('Enforcer user getter is required');
+      expect(e.message).toEqual('enforcer user getter is required');
     }
   });
 
@@ -74,7 +74,7 @@ describe('enforcer', () => {
       });
       expect(enforcer).toBeUndefined();
     } catch (e) {
-      expect(e.message).toEqual('Enforcer authorizer must be a function');
+      expect(e.message).toEqual('enforcer authorizer must be a function');
     }
   });
 });
@@ -181,7 +181,7 @@ describe('handle request', () => {
     });
     enforcer.processRequest = jest.fn(async () => {
       await timeout(0);
-      throw new Error('Unauthorized');
+      throw new Error('unauthorized');
     });
 
     const res = new Response();
@@ -229,7 +229,7 @@ describe('process request', () => {
     test('when a token validation error is thrown', () => {
       const validate = async () => {
         await timeout(0);
-        throw new Error('Validation error');
+        throw new Error('validation error');
       };
       const enforcer = new Enforcer({
         strategy: { validate },
@@ -355,13 +355,13 @@ describe('process request', () => {
 describe('CSRF check', () => {
   describe('throws an error', () => {
     const testTable = [
-      [{}, 'No headers found'],
+      [{}, 'no headers found'],
       [{ headers: {} }, 'x-requested-with header not found'],
       [
         {
           headers: { 'x-requested-with': 1 },
         },
-        'Invalid value in x-requested-with header: 1',
+        'invalid value in x-requested-with header: 1',
       ],
     ];
 

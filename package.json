@@ -1,6 +1,6 @@
 {
   "name": "@pathcheck/safeplaces-auth",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "description": "The modular authentication service for the SafePlaces backend",
   "main": "src/index.js",
   "license": "MIT",
@@ -25,7 +25,8 @@
     "ajv": "^6.12.3",
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^1.8.1",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "verror": "^1.10.0"
   },
   "devDependencies": {
     "coveralls": "^3.1.0",

@@ -27,49 +27,6 @@ describe('auth0 strategy', () => {
     }
   });
 
-  it('enables verbose logging when the environment variable is set', () => {
-    const jwksClient = new JWKSClient({
-      keyId: 'nop',
-      publicKey,
-    });
-
-    process.env.AUTH_LOGGING = 'verbose';
-    const strategy = new strategies.Auth0({
-      jwksClient,
-      apiAudience,
-    });
-    delete process.env.AUTH_LOGGING;
-
-    const token = jwt.sign(
-      jwtClaims,
-      {
-        key: privateKey,
-        passphrase,
-      },
-      {
-        audience: apiAudience,
-        algorithm: 'RS256',
-        keyid: keyId,
-        expiresIn: '1h',
-      },
-    );
-
-    // Mock `console.log` implementation.
-    const originalConsoleLog = console.log;
-    console.log = jest.fn();
-
-    return strategy
-      .validate(token)
-      .then(decoded => {
-        expect(decoded).toBeUndefined();
-      })
-      .catch(() => {
-        expect(console.log.mock.calls[0][0].message).toEqual('Key id mismatch');
-        // Restore `console.log` implementation.
-        console.log = originalConsoleLog;
-      });
-  });
-
   it('rejects the JWT when get signing key throws an error', () => {
     const jwksClient = new JWKSClient({
       keyId: 'nop',
@@ -102,7 +59,7 @@ describe('auth0 strategy', () => {
       })
       .catch(err => {
         expect(err.message).toEqual(
-          'error in secret or public key callback: Key id mismatch',
+          'JWT validation failed: error in secret or public key callback: error in secret or public key callback: key id mismatch',
         );
       });
   });

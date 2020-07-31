@@ -53,7 +53,7 @@ const auth0Strategy = new auth.strategies.Auth0({
 const enforcer = new auth.Enforcer({
   strategy: auth0Strategy,
   // Pass in an asynchronous database lookup function
-  // that takes the user id as the only argument.
+  // that takes the user ID as the only argument.
   userGetter: id => User.findOne(id),
 });
 

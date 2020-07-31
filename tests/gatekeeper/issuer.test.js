@@ -7,7 +7,7 @@ describe('token issuer', () => {
       const issuer = new Issuer({});
       expect(issuer).toBeUndefined();
     } catch (e) {
-      expect(e.message).toEqual('Private key is required');
+      expect(e.message).toEqual('private key is required');
     }
   });
 

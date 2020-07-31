@@ -1,10 +1,11 @@
+const assert = require('assert');
 const generate = require('../common/generate');
 
 class Logout {
-  constructor({ redirect, cookie }) {
-    if (!redirect) {
-      throw new Error('Logout redirect URL is required');
-    }
+  constructor(params) {
+    assert.ok(params, 'logout parameters are required');
+    const { redirect, cookie } = params;
+    assert.ok(redirect, 'logout redirect URL is required');
 
     this.redirect = redirect;
     this.cookie = cookie || {
