@@ -33,7 +33,7 @@ Guard.prototype.handleReq = async function(req, res, callback) {
     return;
   }
 
-  callback(req, res);
+  return callback(req, res);
 };
 
 /**
