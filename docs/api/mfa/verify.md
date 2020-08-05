@@ -1,4 +1,4 @@
-# Verify multifactor authenticator
+# Verify a multi-factor authenticator
 
 Confirms authentication with a second factor (using the code sent via SMS).
 
@@ -19,12 +19,11 @@ Note: although `oob_code` looks similar to `mfa_token`, they are _not_ equal.
 ```json
 {
   "oob_code": "Fe26.2*82dcca*be8149...",
-  "mfa_token": "Fe26.2*82dcca*be8149...",
   "binding_code": "158902"
 }
 ```
 
-### Default Response
+## Default Response
 
 ```http request
 Status: 204 No Content
@@ -34,7 +33,7 @@ The user was successfully verified using two factors and is now logged in.
 
 The access token was sent in the `Set-Cookie` response header. The cookie cannot be accessed by JavaScript.
 
-### Error Response
+## Error Response
 
 The binding code (sent via SMS) is invalid. Try re-entering
 the code or triggering a re-send.

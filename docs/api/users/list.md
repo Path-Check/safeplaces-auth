@@ -6,7 +6,7 @@ Lists all users in the identity provider and the backend database.
 POST /auth/users/list
 ```
 
-### Default Response
+## Default Response
 
 ```http request
 Status: 200 OK
@@ -15,7 +15,7 @@ Status: 200 OK
 An array of retrieved users, where each element of the array has a format
 identical to that described in [get users](get.md).
 
-### Error Response
+## Error Response
 
 The server could not find the user in the database.
 

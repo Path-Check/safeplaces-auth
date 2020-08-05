@@ -25,7 +25,7 @@ in [creating a user](usersreate.md#success-response).
 }
 ```
 
-### Default Response
+## Default Response
 
 ```http request
 Status: 204 No Content
@@ -33,7 +33,7 @@ Status: 204 No Content
 
 The user was successfully registered.
 
-### Error Response
+## Error Response
 
 The registration token is missing or invalid.
 

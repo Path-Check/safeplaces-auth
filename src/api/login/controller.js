@@ -17,7 +17,7 @@ const controller = R.curry(async (config, req, res) => {
     if (e.response && e.response.body) {
       const data = e.response.body;
       if (data.error === 'mfa_required') {
-        // Multifactor authentication is required.
+        // Multi-factor authentication is required.
         res.status(401).json({
           error: 'MFARequired',
           error_description: 'Multifactor authentication required',

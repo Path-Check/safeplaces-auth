@@ -26,7 +26,7 @@ Status: 204 No Content
 
 The user was successfully deleted.
 
-### Error Response
+## Error Response
 
 The user does not exist.
 

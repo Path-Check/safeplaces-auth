@@ -16,7 +16,7 @@ POST /auth/users/get
 }
 ```
 
-### Default Response
+## Default Response
 
 The user was successfully retrieved.
 
@@ -34,7 +34,7 @@ Status 200 OK
 }
 ```
 
-### Error Response
+## Error Response
 
 The user does not exist.
 

@@ -6,7 +6,7 @@ Logs out and erases the access token saved in the browser cookies.
 GET /auth/logout
 ```
 
-### Default Response
+## Default Response
 
 ```http request
 Status: 204 No Content

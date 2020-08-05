@@ -21,7 +21,7 @@ POST /auth/users/assign-role
 }
 ```
 
-### Default Response
+## Default Response
 
 ```http request
 Status: 204 No Content
@@ -29,7 +29,7 @@ Status: 204 No Content
 
 The role was successfully assigned to the user.
 
-### Error Response
+## Error Response
 
 The user does not exist.
 
