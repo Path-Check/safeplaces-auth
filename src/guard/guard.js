@@ -22,11 +22,11 @@ function Guard(config) {
   this.config = config;
 }
 
-Guard.prototype.handleReq = async function (req, res, callback) {
+Guard.prototype.handleReq = async function(req, res, callback) {
   try {
     await this.verifyReq(req);
   } catch (e) {
-    if (this.config.verbose) {
+    if (this.config.verbose || WError.hasCauseWithName(e, 'DBError')) {
       console.log(e);
     }
     res.status(403).send('Forbidden');
@@ -43,7 +43,7 @@ Guard.prototype.handleReq = async function (req, res, callback) {
  * @returns {Promise<void>} A promise resolving nothing.
  * @throws {WError} An error describing why the request was rejected.
  */
-Guard.prototype.verifyReq = async function (req) {
+Guard.prototype.verifyReq = async function(req) {
   const { getUser, authorize } = this.config;
 
   /**
@@ -77,6 +77,14 @@ Guard.prototype.verifyReq = async function (req) {
       name: 'DBError',
       message: 'Unable to retrieve user from DB',
       cause: e,
+      data: { idmId: decoded.sub },
+    });
+  }
+  if (!user) {
+    throw new WError({
+      name: 'DBError',
+      message: 'Unable to retrieve user from DB',
+      data: { idmId: decoded.sub },
     });
   }
   req.user = user;
