@@ -1,6 +1,6 @@
-# Enroll multifactor authenticator
+# Enroll a multi-factor authenticator
 
-Enrolls in multifactor authentication after providing and confirming the possession
+Enrolls in multi-factor authentication after providing and confirming the possession
 of a second factor (e.g. a phone).
 
 ```http request
@@ -11,7 +11,6 @@ POST /auth/mfa/enroll
 | --------------- | ------ | ------ | ------------------------------------------------------------------------------ |
 | `authorization` | string | header | Uses the bearer authentication scheme with a MFA token                         |
 | `phone_number`  | string | body   | [E.164-compliant](https://www.twilio.com/docs/glossary/what-e164) phone number |
-| `binding_code`  | string | body   | Sent SMS code                                                                  |
 
 ### Examples
 
@@ -21,7 +20,9 @@ POST /auth/mfa/enroll
 }
 ```
 
-### Default Response
+## Default Response
+
+Currently, the multi-factor authentication provider only returns a single recovery code.
 
 ```http request
 Status: 200 OK
@@ -30,7 +31,7 @@ Status: 200 OK
 ```json
 {
   "oob_code": "Fe26.2*82dcca*be8149...",
-  "recovery_codes": [""]
+  "recovery_codes": ["3FU5MVP321YXG6WE6N7A2XYZ"]
 }
 ```
 

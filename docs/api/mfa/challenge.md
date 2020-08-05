@@ -1,4 +1,4 @@
-# Send a multifactor authentication challenge
+# Send a multi-factor authentication challenge
 
 Triggers a challenge code to be sent to the second factor
 (e.g. the user's phone).
@@ -11,7 +11,7 @@ POST /auth/mfa/challenge
 | --------------- | ------ | ------ | ------------------------------------------------------ |
 | `authorization` | string | header | Uses the bearer authentication scheme with a MFA token |
 
-### Default Response
+## Default Response
 
 The challenge code was sent to the user's phone.
 
@@ -25,7 +25,7 @@ Status: 200 OK
 }
 ```
 
-### Error Response
+## Error Response
 
 No MFA authenticators are enrolled for the user.
 

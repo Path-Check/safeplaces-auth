@@ -1,4 +1,4 @@
-# Multifactor authentication errors
+# Multi-factor authentication errors
 
 **Status:** `400 Bad Request`
 

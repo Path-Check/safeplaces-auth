@@ -15,7 +15,7 @@ POST /auth/login
 }
 ```
 
-### Default Response
+## Default Response
 
 ```http request
 Status: 204 No Content
@@ -23,7 +23,7 @@ Status: 204 No Content
 
 The access token was sent in the `Set-Cookie` response header. The cookie cannot be accessed by JavaScript.
 
-### Error Response
+## Error Response
 
 The `username` and `password` combination is wrong.
 
@@ -40,7 +40,7 @@ Status: 401 Unauthorized
 
 <br/>
 
-Multifactor authentication is required.
+Multi-factor authentication is required.
 
 ```http request
 Status 401 Unauthorized

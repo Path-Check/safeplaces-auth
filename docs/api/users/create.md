@@ -24,7 +24,7 @@ POST /auth/users/create
 }
 ```
 
-### Default Response
+## Default Response
 
 The user was successfully created and a registration URL was sent in the
 response body.
@@ -49,7 +49,7 @@ Status: 201 Created
 }
 ```
 
-### Error Response
+## Error Response
 
 A user with the given email already exists.
 
