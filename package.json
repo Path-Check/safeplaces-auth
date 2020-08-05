@@ -1,7 +1,7 @@
 {
   "name": "@pathcheck/safeplaces-auth",
-  "version": "1.0.0-alpha.5",
-  "description": "The modular authentication service for the SafePlaces backend",
+  "version": "2.0.0-alpha.0",
+  "description": "The modular information security service for the SafePlaces backend",
   "main": "src/index.js",
   "license": "MIT",
   "author": "Aiyan Jiang",
@@ -14,19 +14,23 @@
   "homepage": "https://github.com/Path-Check/safeplaces-auth#readme",
   "scripts": {
     "lint": "eslint",
-    "format": "prettier --write \"**/*.{js,json}\"",
-    "test": "jest",
-    "coverage": "jest --coverage"
+    "format": "prettier --write \"**/*.{js,json,md}\""
   },
   "files": [
     "src/**/*"
   ],
   "dependencies": {
     "ajv": "^6.12.3",
+    "http-errors": "^1.8.0",
     "jsonwebtoken": "^8.5.1",
     "jwks-rsa": "^1.8.1",
     "node-fetch": "^2.6.0",
-    "verror": "^1.10.0"
+    "ow": "^0.17.0",
+    "ramda": "^0.27.1",
+    "superagent": "^5.3.1",
+    "superstruct": "^0.10.12",
+    "verror": "^1.10.0",
+    "yup": "^0.29.2"
   },
   "devDependencies": {
     "coveralls": "^3.1.0",
