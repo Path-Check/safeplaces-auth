@@ -7,10 +7,10 @@ The modular authentication service for the SafePlaces backend.
 
 ```shell script
 # Install using NPM
-npm install @pathcheck/safeplaces-auth
+npm install @pathcheck/safeplaces-auth@^1.0.0-alpha.5
 
 # Install using Yarn
-yarn add @pathcheck/safeplaces-auth
+yarn add @pathcheck/safeplaces-auth@^1.0.0-alpha.5
 ```
 
 # Table of Contents
