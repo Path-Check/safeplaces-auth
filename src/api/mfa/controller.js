@@ -87,8 +87,6 @@ const enrollController = R.curry(async (config, req, res) => {
     throw e;
   }
 
-  console.log(data);
-
   /*
   Expected response:
   {
@@ -109,7 +107,6 @@ const verifyController = R.curry(async (config, req, res) => {
   } catch (e) {
     if (e.response && e.response.body) {
       const data = e.response.body;
-      console.log(data);
 
       if (data.error_description === 'Invalid binding_code.') {
         res.status(403).json({
