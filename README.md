@@ -7,10 +7,10 @@ The modular information security service for the SafePlaces backend.
 
 ```shell script
 # Install using NPM
-npm install @pathcheck/safeplaces-auth@^2.0.0-alpha.0
+npm install @pathcheck/safeplaces-auth@^2.0.0-alpha.1
 
 # Install using Yarn
-yarn add @pathcheck/safeplaces-auth@^2.0.0-alpha.0
+yarn add @pathcheck/safeplaces-auth@^2.0.0-alpha.1
 ```
 
 ## API Specification
