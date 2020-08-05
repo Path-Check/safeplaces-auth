@@ -1,9 +1,9 @@
-# SafePlaces Authentication Service
+# SafePlaces Information Security
 
 [![Build Status](https://github.com/Path-Check/safeplaces-auth/workflows/Node.js%20CI/badge.svg)](https://github.com/Path-Check/safeplaces-auth/actions?query=workflow%3A%22Node.js+CI%22)
 [![Coverage Status](https://coveralls.io/repos/github/Path-Check/safeplaces-auth/badge.svg?branch=master)](https://coveralls.io/github/Path-Check/safeplaces-auth?branch=master)
 
-The modular authentication service for the SafePlaces backend.
+The modular information security service for the SafePlaces backend.
 
 ```shell script
 # Install using NPM
@@ -14,15 +14,16 @@ yarn add @pathcheck/safeplaces-auth
 ```
 
 # Table of Contents
-* [Examples](#examples)
-  * [Securing API endpoints](#securing-api-endpoints)
-  * [Handling login requests](#handling-login-requests)
-  * [Handling logout requests](#handling-logout-requests)
-* [Strategies](#strategies)
-  * [Auth0](#auth0)
-  * [Symmetric JWT](#symmetric-jwt)
-  * [Dynamic strategy selection](#dynamic-strategy-selection)
-* [Debugging](#debugging)
+
+- [Examples](#examples)
+  - [Securing API endpoints](#securing-api-endpoints)
+  - [Handling login requests](#handling-login-requests)
+  - [Handling logout requests](#handling-logout-requests)
+- [Strategies](#strategies)
+  - [Auth0](#auth0)
+  - [Symmetric JWT](#symmetric-jwt)
+  - [Dynamic strategy selection](#dynamic-strategy-selection)
+- [Debugging](#debugging)
 
 # Examples
 
@@ -73,11 +74,13 @@ app.use((req, res, next) => {
   if (req.headers['X-Bypass-Login']) {
     return next();
   } else {
-    return enforcer
-      // Enforcer ends the request with a `403 Forbidden` if it is unauthorized,
-      // meaning `next` will not be called unless the request is authorized.
-      .handleRequest(req, res, next)
-      .catch(err => next(err));
+    return (
+      enforcer
+        // Enforcer ends the request with a `403 Forbidden` if it is unauthorized,
+        // meaning `next` will not be called unless the request is authorized.
+        .handleRequest(req, res, next)
+        .catch(err => next(err))
+    );
   }
 });
 ```
@@ -152,6 +155,7 @@ app.get('/auth/logout', logoutHandler.handle.bind(logoutHandler));
 # Strategies
 
 **Supported strategies:**
+
 - Auth0 asymmetric JWT
 - Symmetric JWT
 

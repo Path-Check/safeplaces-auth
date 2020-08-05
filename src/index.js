@@ -1,11 +1,9 @@
-const gatekeeper = require('./gatekeeper');
-const manager = require('./manager');
-const common = require('./common');
-const handlers = require('./handlers');
+const api = require('./api/routes');
+const strategies = require('./guard/strategies');
+const Guard = require('./guard/guard');
 
 module.exports = {
-  gatekeeper,
-  manager,
-  handlers,
-  common,
+  api,
+  strategies,
+  Guard,
 };
