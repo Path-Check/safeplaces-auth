@@ -25,13 +25,12 @@ Note: although `oob_code` looks similar to `mfa_token`, they are _not_ equal.
 
 ## Default Response
 
+The user was successfully verified using two factors and is now logged in.
+The access token was sent in the `Set-Cookie` response header. The cookie cannot be accessed by JavaScript.
+
 ```http request
 Status: 204 No Content
 ```
-
-The user was successfully verified using two factors and is now logged in.
-
-The access token was sent in the `Set-Cookie` response header. The cookie cannot be accessed by JavaScript.
 
 ## Error Response
 

@@ -22,7 +22,7 @@ function Guard(config) {
   this.config = config;
 }
 
-Guard.prototype.handleReq = async function(req, res, callback) {
+Guard.prototype.handleReq = async function (req, res, callback) {
   try {
     await this.verifyReq(req);
   } catch (e) {
@@ -43,7 +43,7 @@ Guard.prototype.handleReq = async function(req, res, callback) {
  * @returns {Promise<void>} A promise resolving nothing.
  * @throws {WError} An error describing why the request was rejected.
  */
-Guard.prototype.verifyReq = async function(req) {
+Guard.prototype.verifyReq = async function (req) {
   const { getUser, authorize } = this.config;
 
   /**

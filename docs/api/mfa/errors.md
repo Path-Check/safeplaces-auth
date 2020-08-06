@@ -1,8 +1,10 @@
-# Multi-factor authentication errors
-
-**Status:** `400 Bad Request`
+# Multi-factor Authentication Errors
 
 The MFA token is malformed.
+
+```http request
+Status: 400 Bad Request
+```
 
 ```json
 {
@@ -13,9 +15,11 @@ The MFA token is malformed.
 
 <br/>
 
-**Status:** `401 Unauthorized`
-
 The MFA token is missing from the `Authorization` header.
+
+```http request
+Status: 401 Unauthorized
+```
 
 ```json
 {
@@ -26,9 +30,11 @@ The MFA token is missing from the `Authorization` header.
 
 <br/>
 
-**Status:** `401 Unauthorized`
-
 The MFA token is invalid. A new one should be obtained.
+
+```http request
+Status: 401 Unauthorized
+```
 
 ```json
 {
@@ -39,9 +45,11 @@ The MFA token is invalid. A new one should be obtained.
 
 <br/>
 
-**Status:** `401 Unauthorized`
-
 The MFA token is expired. A new one should be obtained.
+
+```http request
+Status: 401 Unauthorized
+```
 
 ```json
 {

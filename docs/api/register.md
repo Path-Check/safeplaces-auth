@@ -14,7 +14,7 @@ POST /auth/register
 | `password`      | string | body   | New password in plaintext                                       |
 
 Note: the registration token is obtained during user creation. See more details
-in [creating a user](usersreate.md#success-response).
+in [creating a user](users/create.md#default-response).
 
 ### Examples
 
@@ -34,6 +34,21 @@ Status: 204 No Content
 The user was successfully registered.
 
 ## Error Response
+
+The provided password is too weak.
+
+```http request
+Status: 400 Bad Request
+```
+
+```json
+{
+  "error": "PasswordStrengthError",
+  "message": "Password is too weak"
+}
+```
+
+<br/>
 
 The registration token is missing or invalid.
 
