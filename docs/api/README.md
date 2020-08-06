@@ -18,10 +18,13 @@ in order to successfully gain access to protected resources.
 Resources for navigating the multi-factor authentication flow
 in order to complete the standard authentication process.
 
-All of the following endpoints are protected and only accessible
+All the following endpoints are protected and only accessible
 to _stage-1_ authenticated users. Completing the multi-factor
 authentication challenge elevates the user to _stage-2_, thereby
 granting access to the resources authorized by their role.
+
+For more information, see
+[Multi-factor Authentication API](mfa/README.md).
 
 - <code><a href="mfa/enroll.md">POST /auth/mfa/enroll</a></code>
 - <code><a href="mfa/challenge.md">POST /auth/mfa/challenge</a></code>
@@ -34,6 +37,9 @@ application.
 
 All of the following endpoints are protected and only accessible
 to authenticated super administrators.
+
+For more information, see
+[User Management API](users/README.md).
 
 - <code><a href="users/get.md">POST /auth/users/get</a></code>
 - <code><a href="users/list.md">POST /auth/users/list</a></code>

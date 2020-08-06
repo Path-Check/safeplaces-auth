@@ -8,7 +8,7 @@ const password = length => {
     .substr(0, length);
 };
 
-function cookieString(attributes) {
+const cookieString = attributes => {
   const {
     name,
     value,
@@ -43,6 +43,26 @@ function cookieString(attributes) {
   }
 
   return cookieString;
-}
+};
 
-module.exports = { password, cookieString };
+/**
+ * Generates a cookie string based on cookie settings and token data.
+ *
+ * @param config A configuration object with cookie settings.
+ * @param tokenData{{access_token: string, expires_in: number}} Token data returned by Auth0.
+ * @returns {string} A cookie string.
+ */
+const tokenCookieString = (config, tokenData) => {
+  return cookieString({
+    name: 'access_token',
+    value: tokenData.access_token,
+    path: '/',
+    expires: new Date(Date.now() + tokenData.expires_in * 1000),
+    httpOnly: true,
+    sameSite: !!config.cookie.sameSite,
+    secure: !!config.cookie.secure,
+    domain: config.cookie.domain,
+  });
+};
+
+module.exports = { password, cookieString, tokenCookieString };
