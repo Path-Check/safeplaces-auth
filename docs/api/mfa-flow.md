@@ -1,4 +1,6 @@
-![MFA flow](../diagrams/mfa-flow.svg)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Path-Check/safeplaces-auth/docs/docs/diagrams/mfa-flow.svg" width="800">
+</p>
 
 <ol type="A">
   <li>
