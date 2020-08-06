@@ -1,7 +1,8 @@
 const WError = require('../../utils/werror');
 
+// Don't delete `next`.
+// eslint-disable-next-line no-unused-vars
 module.exports = () => (err, req, res, next) => {
-  // Don't delete `next`.
   const errData = WError.getData(err);
   if (errData) {
     console.log(errData);

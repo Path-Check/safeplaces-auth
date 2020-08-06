@@ -1,6 +1,6 @@
 {
   "name": "@pathcheck/safeplaces-auth",
-  "version": "2.0.0-alpha.1",
+  "version": "2.0.0-alpha.2",
   "description": "The modular information security service for the SafePlaces backend",
   "main": "src/index.js",
   "license": "MIT",
@@ -13,7 +13,7 @@
   "repository": "github:Path-Check/safeplaces-auth",
   "homepage": "https://github.com/Path-Check/safeplaces-auth#readme",
   "scripts": {
-    "lint": "eslint",
+    "lint": "eslint \"**/*.js\"",
     "format": "prettier --write \"**/*.{js,json,md}\""
   },
   "files": [
