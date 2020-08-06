@@ -9,4 +9,7 @@ module.exports = {
     oob_code: ow.string,
     binding_code: ow.string,
   }),
+  recover: ow.object.exactShape({
+    recovery_code: ow.string,
+  }),
 };

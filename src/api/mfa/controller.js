@@ -91,7 +91,7 @@ const enrollController = R.curry(async (config, req, res) => {
   Expected response:
   {
     "oob_code": "Fe26.2*82d...",
-    "recovery_codes": [""]
+    "recovery_codes": ["3FU5MVP321YXG6WE6N7A2XYZ"]
   }
    */
   res.status(200).json(data);
@@ -128,18 +128,47 @@ const verifyController = R.curry(async (config, req, res) => {
     "expires_in": 3600
   }
    */
-  const cookieString = generate.cookieString({
-    name: 'access_token',
-    value: tokenData.access_token,
-    path: '/',
-    expires: new Date(Date.now() + tokenData.expires_in * 1000),
-    httpOnly: true,
-    sameSite: !!config.cookie.sameSite,
-    secure: !!config.cookie.secure,
-    domain: config.cookie.domain,
-  });
+  const cookieString = generate.tokenCookieString(config, tokenData);
 
   res.status(204).header('Set-Cookie', cookieString).end();
+});
+
+const recoverController = R.curry(async (config, req, res) => {
+  const { accessToken: mfaToken } = req;
+  const { recovery_code: recoveryCode } = req.body;
+
+  let tokenData;
+  try {
+    tokenData = await oauth.mfaRecoveryGrant(config)(mfaToken, recoveryCode);
+  } catch (e) {
+    if (e.response && e.response.body) {
+      const data = e.response.body;
+
+      if (data.error_description === 'MFA Authorization rejected.') {
+        res.status(401).json({
+          error: 'InvalidRecoveryCode',
+          message: 'Recovery code is invalid',
+        });
+        return;
+      }
+
+      if (handleTokenError(data, res)) return;
+    }
+    throw e;
+  }
+
+  /*
+  Expected response:
+  {
+    "access_token": "eyJhbG...",
+    "expires_in": 3600
+  }
+   */
+  const cookieString = generate.tokenCookieString(config, tokenData);
+
+  res.status(200).header('Set-Cookie', cookieString).json({
+    recovery_code: tokenData.recovery_code,
+  });
 });
 
 module.exports = config => ({
@@ -168,6 +197,15 @@ module.exports = config => ({
       message: 'MFA token is missing',
     }),
     verifyController(config),
+    errorHandler(),
+  ),
+  recover: sequential(
+    validator(schema.recover),
+    authHeaderGetter({
+      error: 'MFATokenMissing',
+      message: 'MFA token is missing',
+    }),
+    recoverController(config),
     errorHandler(),
   ),
 });

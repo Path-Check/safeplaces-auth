@@ -312,10 +312,22 @@ const register = R.curry(async (config, service, req, res) => {
   try {
     await service.updateUser(idmId, { name, password });
   } catch (e) {
+    if (e.response && e.response.body) {
+      const data = e.response.body;
+      if (data.message === 'PasswordStrengthError: Password is too weak') {
+        res.status(400).json({
+          error: 'PasswordStrengthError',
+          message: 'Password is too weak',
+        });
+        return;
+      }
+    }
+
     res.status(500).json({
       error: 'IDPError',
       message: 'Unable to update user registration',
     });
+
     throw e;
   }
 
