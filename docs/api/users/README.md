@@ -1,5 +1,9 @@
 # User Management API
 
+The user management API contains resources for provisioning and managing users to the SafePlaces application.
+
+All the following endpoints are protected and only accessible to authenticated super administrators.
+
 ## Resources
 
 - <code><a href="get.md">POST /auth/users/get</a></code>
@@ -10,5 +14,5 @@
 
 ## General Errors
 
-See [User Management Errors](_errors.md) for some general
+See [User Management Errors](errors.md) for some general
 errors that can occur when accessing the user management endpoints.
