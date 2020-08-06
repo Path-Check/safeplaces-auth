@@ -12,7 +12,7 @@ const controller = R.curry(async (config, req, res) => {
 
   let tokenData;
   try {
-    tokenData = await oauth.fetchAccessToken(config)(username, password);
+    tokenData = await oauth.passwordGrant(config)(username, password);
   } catch (e) {
     if (e.response && e.response.body) {
       const data = e.response.body;
@@ -44,16 +44,7 @@ const controller = R.curry(async (config, req, res) => {
     throw e;
   }
 
-  const cookieString = generate.cookieString({
-    name: 'access_token',
-    value: tokenData.access_token,
-    path: '/',
-    expires: new Date(Date.now() + tokenData.expires_in * 1000),
-    httpOnly: true,
-    sameSite: !!config.cookie.sameSite,
-    secure: !!config.cookie.secure,
-    domain: config.cookie.domain,
-  });
+  const cookieString = generate.tokenCookieString(config, tokenData);
 
   res.status(204).header('Set-Cookie', cookieString).end();
 });

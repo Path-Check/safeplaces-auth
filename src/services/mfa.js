@@ -1,6 +1,9 @@
 const R = require('ramda');
 const superagent = require('superagent');
 
+/**
+ * Filters out authenticators that do not use OOB codes or the SMS channel.
+ */
 const filterAuths = R.filter(
   R.whereEq({
     authenticator_type: 'oob',
@@ -8,6 +11,12 @@ const filterAuths = R.filter(
   }),
 );
 
+/**
+ * Gets a user's enrolled authenticators.
+ *
+ * @param config A configuration object for Auth0 and other settings.
+ * @param mfaToken The multifactor authentication token.
+ */
 const getAuths = R.curry((config, mfaToken) => {
   const { auth0 } = config;
 
@@ -15,7 +24,7 @@ const getAuths = R.curry((config, mfaToken) => {
     .get(`${auth0.baseUrl}/mfa/authenticators`)
     .set('Authorization', `Bearer ${mfaToken}`)
     .then(res => res.body)
-    .then(filterAuths);
+    .then(filterAuths); // Filter out unacceptable methods of authentication.
 });
 
 /**
