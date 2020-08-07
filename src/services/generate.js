@@ -52,7 +52,7 @@ const cookieString = attributes => {
  * @param tokenData{{access_token: string, expires_in: number}} Token data returned by Auth0.
  * @returns {string} A cookie string.
  */
-const tokenCookieString = (config, tokenData) => {
+const tokenCookie = (config, tokenData) => {
   return cookieString({
     name: 'access_token',
     value: tokenData.access_token,
@@ -65,4 +65,4 @@ const tokenCookieString = (config, tokenData) => {
   });
 };
 
-module.exports = { password, cookieString, tokenCookieString };
+module.exports = { password, cookieString, tokenCookie };

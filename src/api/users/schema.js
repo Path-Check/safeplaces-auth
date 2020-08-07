@@ -18,8 +18,15 @@ module.exports = {
     id: ow.string.matches(uuidRegexp),
     role: ow.string.oneOf(ROLES),
   }),
+  createPasswordResetTicket: ow.object.exactShape({
+    id: ow.string.matches(uuidRegexp),
+    redirect_url: ow.string,
+  }),
   register: ow.object.exactShape({
     name: ow.string,
+    password: ow.string,
+  }),
+  resetPassword: ow.object.exactShape({
     password: ow.string,
   }),
 };

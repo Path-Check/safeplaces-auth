@@ -13,7 +13,8 @@ POST /auth/mfa/challenge
 
 ## Default Response
 
-The challenge code was sent to the user's phone.
+The challenge code was sent to the user's phone. The server returned
+an out-of-band code and the name of the authenticator (the user's obfuscated phone number).
 
 ```http request
 Status: 200 OK
@@ -21,6 +22,7 @@ Status: 200 OK
 
 ```json
 {
+  "name": "XXXXXXXX2851",
   "oob_code": "Fe26.2*82dcca*be8149..."
 }
 ```

@@ -38,7 +38,7 @@ Status: 401 Unauthorized
 
 ```json
 {
-  "error": "InvalidMFAToken",
+  "error": "MFATokenInvalid",
   "message": "MFA token is invalid, try getting a new token"
 }
 ```

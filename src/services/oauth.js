@@ -1,7 +1,10 @@
 const R = require('ramda');
 const superagent = require('superagent');
 
-const mfaGrant = R.curry(async (config, mfaToken, oobCode, bindingCode) => {
+/**
+ * Grant interface for logging in with an OTP.
+ */
+const mfaOTPGrant = R.curry(async (config, mfaToken, oobCode, bindingCode) => {
   const { auth0 } = config;
 
   const data = await superagent
@@ -20,6 +23,9 @@ const mfaGrant = R.curry(async (config, mfaToken, oobCode, bindingCode) => {
   return R.pick(['access_token', 'expires_in'])(data);
 });
 
+/**
+ * Grant interface for logging in with a recovery code.
+ */
 const mfaRecoveryGrant = R.curry(async (config, mfaToken, recoveryCode) => {
   const { auth0 } = config;
 
@@ -38,7 +44,11 @@ const mfaRecoveryGrant = R.curry(async (config, mfaToken, recoveryCode) => {
   return R.pick(['access_token', 'expires_in', 'recovery_code'])(data);
 });
 
-const passwordGrant = R.curry(async (config, username, password) => {
+/**
+ * Default grant interface for accessing the SafePlaces API.
+ * When MFA is enabled, the grant will fail and defer to an MFA grant.
+ */
+const passwordOnlyGrant = R.curry(async (config, username, password) => {
   const { auth0 } = config;
 
   const data = await superagent
@@ -59,4 +69,8 @@ const passwordGrant = R.curry(async (config, username, password) => {
   return R.pick(['access_token', 'expires_in'], data);
 });
 
-module.exports = { passwordGrant, mfaGrant, mfaRecoveryGrant };
+module.exports = {
+  passwordOnlyGrant,
+  mfaOTPGrant,
+  mfaRecoveryGrant,
+};

@@ -49,3 +49,14 @@ Status: 400 Bad Request
   "message": "Phone number is invalid"
 }
 ```
+
+```http request
+Status: 409 Conflict
+```
+
+```json
+{
+  "error": "UserAlreadyEnrolled",
+  "message": "An MFA factor is already enrolled, try requesting a challenge for the existing factor"
+}
+```
