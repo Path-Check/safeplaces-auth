@@ -18,7 +18,6 @@ See more details in [Create password reset ticket](users/reset-password.md#defau
 
 ```json
 {
-  "name": "Administrator",
   "password": "xyz2020"
 }
 ```
@@ -29,7 +28,7 @@ See more details in [Create password reset ticket](users/reset-password.md#defau
 Status: 204 No Content
 ```
 
-The user was successfully registered.
+The user's password was successfully updated.
 
 ## Error Response
 
@@ -57,29 +56,13 @@ Status: 401 Unauthorized
 ```json
 {
   "error": "Unauthorized",
-  "message": "Missing registration token"
+  "message": "Missing password reset token"
 }
 ```
 
 ```json
 {
   "error": "Unauthorized",
-  "message": "Invalid registration token"
-}
-```
-
-<br/>
-
-The server was unable to update user registration due to
-an unknown failure in the identity provider.
-
-```http request
-Status: 500 Internal Server Error
-```
-
-```json
-{
-  "error": "IDPError",
-  "message": "Unable to update user registration"
+  "message": "Invalid password reset token"
 }
 ```
