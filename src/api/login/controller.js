@@ -6,9 +6,11 @@ const errorHandler = require('../middleware/errorHandler');
 const schema = require('./schema');
 const oauth = require('../../services/oauth');
 const generate = require('../../services/generate');
+const decode = require('../../services/decode');
 
 const controller = R.curry(async (config, req, res) => {
   const { username, password } = req.body;
+  const { db } = config;
 
   let tokenData;
   try {
@@ -44,9 +46,34 @@ const controller = R.curry(async (config, req, res) => {
     throw e;
   }
 
+  let idmId;
+  try {
+    const decoded = decode(tokenData.access_token);
+    idmId = decoded.sub;
+  } catch (e) {
+    res.status(500).json({
+      error: 'InternalServerError',
+      message: 'Unable to decode access token',
+    });
+
+    throw e;
+  }
+
+  let dbId;
+  try {
+    dbId = await db.idmToDb(idmId);
+  } catch (e) {
+    res.status(500).json({
+      error: 'DBError',
+      message: 'Unable to find user in DB',
+    });
+
+    throw e;
+  }
+
   const cookieString = generate.tokenCookie(config, tokenData);
   res.status(200).header('Set-Cookie', cookieString).json({
-    id: '',
+    id: dbId,
   });
 });
 
