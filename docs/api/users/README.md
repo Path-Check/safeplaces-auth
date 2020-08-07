@@ -11,6 +11,9 @@ All the following endpoints are protected and only accessible to authenticated s
 - <code><a href="create.md">POST /auth/users/create</a></code>
 - <code><a href="delete.md">POST /auth/users/delete</a></code>
 - <code><a href="assign-role.md">POST /auth/users/assign-role</a></code>
+- <code><a href="reset-password.md">POST /auth/users/reset-password</a></code>
+
+* <code><a href="reflect.md">GET /auth/users/reflect</a></code>
 
 ## General Errors
 
