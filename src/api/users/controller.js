@@ -1,7 +1,7 @@
 const R = require('ramda');
 const WError = require('../../utils/werror');
 const users = require('../../services/users');
-const registration = require('../../services/registration');
+const selfService = require('../../services/selfService');
 const schema = require('./schema');
 
 /**
@@ -10,6 +10,7 @@ const schema = require('./schema');
 const sequential = require('../middleware/sequential');
 const validator = require('../middleware/validator');
 const idTranslator = require('../middleware/idTranslator');
+const authHeaderGetter = require('../middleware/authHeaderGetter');
 const errorHandler = require('../middleware/errorHandler');
 
 const ROLE_RANKS = ['super_admin', 'admin', 'contact_tracer'];
@@ -110,7 +111,7 @@ const listUsers = R.curry(async (config, service, req, res) => {
 });
 
 const createUser = R.curry(async (config, service, req, res) => {
-  const { db, privateKey } = config;
+  const { db, privateKey, jwtClaimNamespace } = config;
   const {
     email,
     role,
@@ -177,8 +178,9 @@ const createUser = R.curry(async (config, service, req, res) => {
    */
   let redirect;
   try {
-    const regToken = registration.issueRegistrationToken(
+    const regToken = selfService.issueUpdateToken(
       privateKey,
+      `${jwtClaimNamespace}/auth/register`,
       idmId,
       '5d',
     );
@@ -281,24 +283,75 @@ const assignRole = R.curry(async (config, service, req, res) => {
   res.status(204).end();
 });
 
-const register = R.curry(async (config, service, req, res) => {
-  const { name, password } = req.body;
-  const { headers } = req;
+/*
+const getMfaEnrollments = R.curry(async (config, service, req, res) => {
+  const { idmId } = req.body;
 
-  if (!headers.authorization) {
-    res.status(401).json({
-      error: 'Unauthorized',
-      message: 'Missing registration token',
+  console.log(idmId);
+
+  let enrollments;
+  try {
+    enrollments = await service.getMfaEnrollmentsOfUser(idmId);
+  } catch (e) {
+    res.status(500).json({
+      error: 'IDPError',
+      message: 'Unable to get MFA enrollments of user',
     });
-    return;
+
+    throw e;
   }
 
-  const regToken = headers.authorization.replace(/^bearer /gi, '');
+  enrollments = R.map(R.pick(['status', 'type', 'phone_number']))(enrollments);
+
+  res.status(200).json(enrollments);
+});
+*/
+
+const resetMfa = R.curry(async (config, service, req, res) => {
+  const { idmId } = req.body;
+
+  // Get all of the user's MFA enrollments.
+  let enrollments;
+  try {
+    enrollments = await service.getMfaEnrollmentsOfUser(idmId);
+  } catch (e) {
+    res.status(500).json({
+      error: 'IDPError',
+      message: 'Unable to get MFA enrollments of user',
+    });
+
+    throw e;
+  }
+
+  // Delete all of the user's MFA enrollments.
+  try {
+    for (const enrollment of enrollments) {
+      await service.deleteMfaEnrollmentOfUser(enrollment.id);
+    }
+  } catch (e) {
+    res.status(500).json({
+      error: 'IDPError',
+      message: 'Unable to remove MFA enrollments',
+    });
+
+    throw e;
+  }
+
+  res.status(200).json({
+    removed: enrollments.length,
+  });
+});
+
+const register = R.curry(async (config, service, req, res) => {
+  const { name, password } = req.body;
+  const { accessToken: regToken } = req;
+  const { jwtClaimNamespace } = config;
 
   let idmId;
   try {
-    ({ sub: idmId } = registration.decodeRegistrationToken(
+    ({ sub: idmId } = selfService.decodeUpdateToken(
       config.privateKey,
+      `${jwtClaimNamespace}/auth/register`,
       regToken,
     ));
   } catch (e) {
@@ -322,12 +375,73 @@ const register = R.curry(async (config, service, req, res) => {
         return;
       }
     }
+    throw e;
+  }
 
+  res.status(204).end();
+});
+
+const createPasswordResetTicket = R.curry(async (config, service, req, res) => {
+  const { idmId, redirect_url: redirectUrl } = req.body;
+  const { privateKey, jwtClaimNamespace } = config;
+
+  /**
+   * Issue a password change token.
+   */
+  let redirect;
+  try {
+    const regToken = selfService.issueUpdateToken(
+      privateKey,
+      `${jwtClaimNamespace}/auth/reset-password`,
+      idmId,
+      '5d',
+    );
+    redirect = `${redirectUrl}?t=${encodeURIComponent(regToken)}`;
+  } catch (e) {
     res.status(500).json({
-      error: 'IDPError',
-      message: 'Unable to update user registration',
+      error: 'SigningError',
+      message: 'Unable to issue password reset token',
     });
 
+    throw e;
+  }
+
+  res.status(200).json({ password_reset_url: redirect });
+});
+
+const resetPassword = R.curry(async (config, service, req, res) => {
+  const { accessToken: resetToken } = req;
+  const { password } = req.body;
+  const { jwtClaimNamespace } = config;
+
+  let idmId;
+  try {
+    ({ sub: idmId } = selfService.decodeUpdateToken(
+      config.privateKey,
+      `${jwtClaimNamespace}/auth/reset-password`,
+      resetToken,
+    ));
+  } catch (e) {
+    res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Invalid password reset token',
+    });
+    return;
+  }
+
+  try {
+    await service.updateUser(idmId, { password });
+  } catch (e) {
+    if (e.response && e.response.body) {
+      const data = e.response.body;
+      if (data.message === 'PasswordStrengthError: Password is too weak') {
+        res.status(400).json({
+          error: 'PasswordStrengthError',
+          message: 'Password is too weak',
+        });
+        return;
+      }
+    }
     throw e;
   }
 
@@ -361,9 +475,42 @@ module.exports = config => {
       assignRole(config, service),
       errorHandler(),
     ),
+    /*
+        getMfaEnrollments: sequential(
+          validator(schema.id),
+          idTranslator(config),
+          getMfaEnrollments(config, service),
+          errorHandler(),
+        ),
+    */
+    resetMfa: sequential(
+      validator(schema.id),
+      idTranslator(config),
+      resetMfa(config, service),
+      errorHandler(),
+    ),
+    createPasswordResetTicket: sequential(
+      validator(schema.createPasswordResetTicket),
+      idTranslator(config),
+      createPasswordResetTicket(config, service),
+      errorHandler(),
+    ),
     register: sequential(
       validator(schema.register),
+      authHeaderGetter({
+        error: 'Unauthorized',
+        message: 'Missing registration token',
+      }),
       register(config, service),
+      errorHandler(),
+    ),
+    resetPassword: sequential(
+      validator(schema.resetPassword),
+      authHeaderGetter({
+        error: 'Unauthorized',
+        message: 'Missing password reset token',
+      }),
+      resetPassword(config, service),
       errorHandler(),
     ),
   };

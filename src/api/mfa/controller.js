@@ -22,7 +22,16 @@ const handleTokenError = (data, res) => {
   } else if (data.error_description === 'Malformed mfa_token') {
     res.status(400).json({
       error: 'MFATokenMalformed',
-      message: 'MFA token is malformed',
+      message: 'MFA token is malformed, try getting a new token',
+    });
+    return true;
+  } else if (
+    data.error_description ===
+    'The mfa_token provided is invalid. Try getting a new token.'
+  ) {
+    res.status(401).json({
+      error: 'MFATokenInvalid',
+      message: 'MFA token is invalid, try getting a new token',
     });
     return true;
   }
@@ -55,12 +64,25 @@ const challengeController = R.curry(async (config, req, res) => {
   }
 
   // Select the first authenticator.
-  const authId = auths[0].id;
+  const selectedAuth = auths[0];
 
   // Trigger a MFA challenge to be sent.
-  const data = await mfa.challenge(config)(mfaToken, authId);
+  let data;
+  try {
+    data = await mfa.challenge(config)(mfaToken, selectedAuth.id);
+  } catch (e) {
+    if (e.response && e.response.body) {
+      const data = e.response.body;
 
-  res.status(200).json({ oob_code: data.oob_code });
+      if (handleTokenError(data, res)) return;
+    }
+    throw e;
+  }
+
+  res.status(200).json({
+    name: selectedAuth.name, // The user's obfuscated phone number.
+    oob_code: data.oob_code, // An out-of-band code.
+  });
 });
 
 const enrollController = R.curry(async (config, req, res) => {
@@ -78,6 +100,13 @@ const enrollController = R.curry(async (config, req, res) => {
         res.status(400).json({
           error: 'InvalidPhoneNumber',
           message: 'Phone number is invalid',
+        });
+        return;
+      } else if (data.error_description === 'User is already enrolled.') {
+        res.status(409).json({
+          error: 'UserAlreadyEnrolled',
+          message:
+            'An MFA factor is already enrolled, try requesting a challenge for the existing factor',
         });
         return;
       }
@@ -103,7 +132,7 @@ const verifyController = R.curry(async (config, req, res) => {
 
   let tokenData;
   try {
-    tokenData = await oauth.mfaGrant(config)(mfaToken, oobCode, bindingCode);
+    tokenData = await oauth.mfaOTPGrant(config)(mfaToken, oobCode, bindingCode);
   } catch (e) {
     if (e.response && e.response.body) {
       const data = e.response.body;
@@ -114,6 +143,12 @@ const verifyController = R.curry(async (config, req, res) => {
           message: 'Binding code is invalid, try triggering a re-send',
         });
         return true;
+      } else if (data.error_description === 'Malformed oob_code') {
+        res.status(400).json({
+          error: 'MalformedOOBCode',
+          message: 'OOB code is malformed',
+        });
+        return true;
       }
 
       if (handleTokenError(data, res)) return;
@@ -121,14 +156,7 @@ const verifyController = R.curry(async (config, req, res) => {
     throw e;
   }
 
-  /*
-  Expected response:
-  {
-    "access_token": "eyJhbG...",
-    "expires_in": 3600
-  }
-   */
-  const cookieString = generate.tokenCookieString(config, tokenData);
+  const cookieString = generate.tokenCookie(config, tokenData);
 
   res.status(204).header('Set-Cookie', cookieString).end();
 });
@@ -157,54 +185,41 @@ const recoverController = R.curry(async (config, req, res) => {
     throw e;
   }
 
-  /*
-  Expected response:
-  {
-    "access_token": "eyJhbG...",
-    "expires_in": 3600
-  }
-   */
-  const cookieString = generate.tokenCookieString(config, tokenData);
+  const cookieString = generate.tokenCookie(config, tokenData);
 
+  // Respond with a new recovery code.
   res.status(200).header('Set-Cookie', cookieString).json({
     recovery_code: tokenData.recovery_code,
   });
 });
 
+const tokenMissingObject = {
+  error: 'MFATokenMissing',
+  message: 'MFA token is missing',
+};
+
 module.exports = config => ({
   challenge: sequential(
-    validator(schema.challenge),
-    authHeaderGetter({
-      error: 'MFATokenMissing',
-      message: 'MFA token is missing',
-    }),
+    validator(schema.none),
+    authHeaderGetter(tokenMissingObject),
     challengeController(config),
     errorHandler(),
   ),
   enroll: sequential(
     validator(schema.enroll),
-    authHeaderGetter({
-      error: 'MFATokenMissing',
-      message: 'MFA token is missing',
-    }),
+    authHeaderGetter(tokenMissingObject),
     enrollController(config),
     errorHandler(),
   ),
   verify: sequential(
     validator(schema.verify),
-    authHeaderGetter({
-      error: 'MFATokenMissing',
-      message: 'MFA token is missing',
-    }),
+    authHeaderGetter(tokenMissingObject),
     verifyController(config),
     errorHandler(),
   ),
   recover: sequential(
     validator(schema.recover),
-    authHeaderGetter({
-      error: 'MFATokenMissing',
-      message: 'MFA token is missing',
-    }),
+    authHeaderGetter(tokenMissingObject),
     recoverController(config),
     errorHandler(),
   ),

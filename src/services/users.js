@@ -10,6 +10,16 @@ const time = {
   HOUR: 60 * 1000 * 1000,
 };
 
+/**
+ * One-off, dependency-free functions.
+ */
+
+/**
+ * Gets a management token.
+ *
+ * @param config A valid configuration object containing Auth0 and other settings.
+ * @returns {Promise<{access_token: string, expires_in: number}>} Token data.
+ */
 const getManagementToken = config => {
   const { auth0 } = config;
 
@@ -25,6 +35,13 @@ const getManagementToken = config => {
     .then(R.pick(['access_token', 'expires_in']));
 };
 
+/**
+ * Gets all created roles as an array of their IDs.
+ *
+ * @param config A valid configuration object containing Auth0 and other settings.
+ * @param accessToken A management token.
+ * @returns {Promise<string[]>} An array of role IDs.
+ */
 const getRoles = (config, accessToken) => {
   const { auth0 } = config;
 
@@ -36,26 +53,54 @@ const getRoles = (config, accessToken) => {
     .then(R.map(R.prop('id')));
 };
 
+/**
+ * Dependency-required functions for interfacing with Auth0.
+ *
+ * Format:
+ *
+ * const someInterface = {
+ *   dependencies: ['dep1', 'dep2', ...],
+ *   handler: (injectedDep1, injectedDep2, ..., arg1, arg2, ...) => {
+ *     // Handler in here
+ *   },
+ * };
+ *
+ * The `dependencies` are injected into the handler at execution-time, allowing
+ * them to be lazy-evaluated (very import, as access tokens expire)!
+ *
+ * Since the handlers are "curried", they can accept arguments one at a time.
+ *
+ * Example:
+ *
+ * const add = R.curry((a, b) => a + b); // Using `R`, the `ramda` library.
+ * const addTwo = add(2); // `addTwo` is a function!
+ *
+ * // The following adds 2 to 1.
+ * console.log(addTwo(1) === 3) // `true`
+ */
+
 const getUser = {
   dependencies: ['config', 'accessToken'],
   handler: (config, accessToken, userId) => {
     const { auth0 } = config;
 
-    return superagent
-      .get(`${auth0.baseUrl}/api/v2/users/${userId}`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .then(res => res.body)
-      .then(R.pick(['email', 'email_verified', 'name', 'user_id']))
-      .catch(err => {
-        if (err.response.statusCode === 404) {
-          throw new WError({
-            name: 'UserNotFound',
-            message: 'User does not exist',
-            data: { res: err.response.text },
-          });
-        }
-        throw err;
-      });
+    return (
+      superagent
+        .get(`${auth0.baseUrl}/api/v2/users/${userId}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .then(res => res.body)
+        // .then(R.pick(['email', 'email_verified', 'name', 'user_id']))
+        .catch(err => {
+          if (err.response.statusCode === 404) {
+            throw new WError({
+              name: 'UserNotFound',
+              message: 'User does not exist',
+              data: { res: err.response.text },
+            });
+          }
+          throw err;
+        })
+    );
   },
 };
 
@@ -189,6 +234,35 @@ const removeRolesFromUser = {
   },
 };
 
+/**
+ * Gets a user's MFA enrollments.
+ */
+const getMfaEnrollmentsOfUser = {
+  dependencies: ['config', 'accessToken'],
+  handler: async (config, accessToken, userId) => {
+    const { auth0 } = config;
+
+    return superagent
+      .get(`${auth0.baseUrl}/api/v2/users/${userId}/enrollments`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .then(res => res.body);
+  },
+};
+
+/**
+ * Deletes a single MFA enrollment given its ID.
+ */
+const deleteMfaEnrollmentOfUser = {
+  dependencies: ['config', 'accessToken'],
+  handler: async (config, accessToken, enrollmentId) => {
+    const { auth0 } = config;
+
+    return superagent
+      .delete(`${auth0.baseUrl}/api/v2/guardian/enrollments/${enrollmentId}`)
+      .set('Authorization', `Bearer ${accessToken}`);
+  },
+};
+
 const createEmailVerificationTicket = {
   dependencies: ['config', 'accessToken'],
   handler: async (config, accessToken, userId, redirectUrl) => {
@@ -219,9 +293,9 @@ TokenGetter.prototype.refresh = async function () {
 
 TokenGetter.prototype.get = async function () {
   if (this.expiration - Date.now() < 2 * time.MINUTE) {
-    await this.refresh();
+    await this.refresh(); // With `await` so execution is blocked.
   } else if (this.expiration - Date.now() < 10 * time.MINUTE) {
-    this.refresh().then();
+    this.refresh().then(); // Without `await` so execution isn't blocked.
   }
   return this.accessToken;
 };
@@ -256,32 +330,50 @@ const services = {
   assignRoleToUser,
   getRolesOfUser,
   removeRolesFromUser,
+  getMfaEnrollmentsOfUser,
+  deleteMfaEnrollmentOfUser,
   createEmailVerificationTicket,
 };
 
+/**
+ * Dependency injection service.
+ *
+ * @param config A valid configuration object containing Auth0 and other settings.
+ * @returns exports An object with functions to interface with Auth0.
+ */
 const service = config => {
   const tokenGetter = new TokenGetter(config);
   const roleGetter = new RoleGetter(config, tokenGetter);
 
+  // Create an inversion-of-control container.
   const container = new Container();
+  // Register dependencies that the handlers can access.
   container.register('config', config);
   container.register('accessToken', () => tokenGetter.get());
   container.register('roleGetter', roleGetter.get.bind(roleGetter));
 
   const exports = {};
 
+  // Iterate over every service that should be exported.
   for (const [name, svc] of Object.entries(services)) {
+    // Add a new export.
     exports[name] = async (...args) => {
+      // Curry the handler, e.g.: (a, b, c) -> (a)(b)(c).
       let curried = R.curry(svc.handler);
 
+      // Iterate over all of the handler's dependencies.
       for (const dep of svc.dependencies) {
+        // Try to get the dependency from the container.
         const resolvedDep = await container.get(dep);
+        // Update the curried handler.
         curried = await curried(resolvedDep);
       }
 
       if (svc.handler.length === svc.dependencies.length) {
+        // If the handler has been evaluated, just return its value.
         return curried;
       } else {
+        // Otherwise, apply the arguments and return its value.
         return curried(...args);
       }
     };

@@ -14,14 +14,14 @@ POST /auth/mfa/verify
 
 ### Examples
 
-Note: although `oob_code` looks similar to `mfa_token`, they are _not_ equal.
-
 ```json
 {
   "oob_code": "Fe26.2*82dcca*be8149...",
   "binding_code": "158902"
 }
 ```
+
+Note: although `oob_code` looks similar to `mfa_token`, they are _not_ equal.
 
 ## Default Response
 
@@ -33,6 +33,21 @@ Status: 204 No Content
 ```
 
 ## Error Response
+
+The OOB is malformed.
+
+```http request
+Status: 400 Bad Request
+```
+
+```json
+{
+  "error": "MalformedOOBCode",
+  "message": "OOB code is malformed"
+}
+```
+
+<br/>
 
 The binding code (sent via SMS) is invalid. Try re-entering
 the code or triggering a re-send.

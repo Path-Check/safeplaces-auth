@@ -1,8 +1,7 @@
 # Bypass multi-factor authentication with a recovery code
 
-Bypasses multi-factor authentication by using the recovery code
-provided during account registration. The user is automatically
-logged in after submitting the recovery code.
+Bypasses multi-factor authentication by using the recovery code provided during account registration. The user is
+automatically logged in after submitting the recovery code.
 
 Note: the old recovery code is invalidated after a single use - the server
 returns a new one so the user can write it down.
@@ -29,8 +28,7 @@ POST /auth/mfa/recover
 The user was successfully verified using the recovery code and is now logged in.
 The access token was sent in the `Set-Cookie` response header. The cookie cannot be accessed by JavaScript.
 
-A new recovery code was sent in the response body and the old recovery code
-was invalidated.
+A new recovery code was sent in the response body and the old recovery code was invalidated.
 
 ```http request
 Status: 200 OK
@@ -44,8 +42,7 @@ Status: 200 OK
 
 ## Error Response
 
-The binding code (sent via SMS) is invalid. Try re-entering
-the code or triggering a re-send.
+The binding code (sent via SMS) is invalid. Try re-entering the code or triggering a re-send.
 
 ```http request
 Status: 401 Unauthorized
