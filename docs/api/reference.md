@@ -23,12 +23,12 @@
 
 ### Provisioning
 
-- <code><a href="get.md">POST /auth/users/get</a></code>
-- <code><a href="list.md">POST /auth/users/list</a></code>
-- <code><a href="create.md">POST /auth/users/create</a></code>
-- <code><a href="delete.md">POST /auth/users/delete</a></code>
-- <code><a href="assign-role.md">POST /auth/users/assign-role</a></code>
-- <code><a href="reset-password.md">POST /auth/users/reset-password</a></code>
-- <code><a href="reset-mfa.md">POST /auth/users/reset-mfa</a></code>
+- <code><a href="users/get.md">POST /auth/users/get</a></code>
+- <code><a href="users/list.md">POST /auth/users/list</a></code>
+- <code><a href="users/create.md">POST /auth/users/create</a></code>
+- <code><a href="users/delete.md">POST /auth/users/delete</a></code>
+- <code><a href="users/assign-role.md">POST /auth/users/assign-role</a></code>
+- <code><a href="users/reset-password.md">POST /auth/users/reset-password</a></code>
+- <code><a href="users/reset-mfa.md">POST /auth/users/reset-mfa</a></code>
 
-* <code><a href="reflect.md">GET /auth/users/reflect</a></code>
+* <code><a href="users/reflect.md">GET /auth/users/reflect</a></code>
