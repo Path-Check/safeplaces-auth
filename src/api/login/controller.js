@@ -1,16 +1,21 @@
 const R = require('ramda');
 const WError = require('../../utils/werror');
-const sequential = require('../middleware/sequential');
-const validator = require('../middleware/validator');
-const errorHandler = require('../middleware/errorHandler');
 const schema = require('./schema');
 const oauth = require('../../services/oauth');
 const generate = require('../../services/generate');
 const decode = require('../../services/decode');
+const roleService = require('../../services/roles');
+
+/**
+ * Middleware
+ */
+const sequential = require('../middleware/sequential');
+const validator = require('../middleware/validator');
+const errorHandler = require('../middleware/errorHandler');
 
 const controller = R.curry(async (config, req, res) => {
   const { username, password } = req.body;
-  const { db } = config;
+  const { db, jwtClaimNamespace } = config;
 
   let tokenData;
   try {
@@ -47,9 +52,12 @@ const controller = R.curry(async (config, req, res) => {
   }
 
   let idmId;
+  let role;
   try {
     const decoded = decode(tokenData.access_token);
     idmId = decoded.sub;
+    const roles = decoded[`${jwtClaimNamespace}/roles`];
+    role = roleService.findHighestUserRole(roles);
   } catch (e) {
     res.status(500).json({
       error: 'InternalServerError',
@@ -74,6 +82,7 @@ const controller = R.curry(async (config, req, res) => {
   const cookieString = generate.tokenCookie(config, tokenData);
   res.status(200).header('Set-Cookie', cookieString).json({
     id: dbId,
+    role,
   });
 });
 

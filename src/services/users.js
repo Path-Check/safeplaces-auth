@@ -84,23 +84,21 @@ const getUser = {
   handler: (config, accessToken, userId) => {
     const { auth0 } = config;
 
-    return (
-      superagent
-        .get(`${auth0.baseUrl}/api/v2/users/${userId}`)
-        .set('Authorization', `Bearer ${accessToken}`)
-        .then(res => res.body)
-        // .then(R.pick(['email', 'email_verified', 'name', 'user_id']))
-        .catch(err => {
-          if (err.response.statusCode === 404) {
-            throw new WError({
-              name: 'UserNotFound',
-              message: 'User does not exist',
-              data: { res: err.response.text },
-            });
-          }
-          throw err;
-        })
-    );
+    return superagent
+      .get(`${auth0.baseUrl}/api/v2/users/${userId}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .then(res => res.body)
+      .then(R.pick(['email', 'email_verified', 'name', 'user_id']))
+      .catch(err => {
+        if (err.response.statusCode === 404) {
+          throw new WError({
+            name: 'UserNotFound',
+            message: 'User does not exist',
+            data: { res: err.response.text },
+          });
+        }
+        throw err;
+      });
   },
 };
 

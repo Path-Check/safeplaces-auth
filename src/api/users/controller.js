@@ -2,6 +2,7 @@ const R = require('ramda');
 const WError = require('../../utils/werror');
 const users = require('../../services/users');
 const selfService = require('../../services/selfService');
+const roleService = require('../../services/roles');
 const schema = require('./schema');
 
 /**
@@ -13,22 +14,20 @@ const idTranslator = require('../middleware/idTranslator');
 const authHeaderGetter = require('../middleware/authHeaderGetter');
 const errorHandler = require('../middleware/errorHandler');
 
-const ROLE_RANKS = ['super_admin', 'admin', 'contact_tracer'];
+const getUserRole = async (service, res, user) => {
+  try {
+    const roles = await service
+      .getRolesOfUser(user.user_id)
+      .then(R.map(R.prop('name')));
+    return roleService.findHighestUserRole(roles);
+  } catch (e) {
+    res.status(500).json({
+      error: 'IDPError',
+      message: `Unable to get role of user: ${user.email}`,
+    });
 
-/**
- * Determines the highest-ranking role of an array of roles.
- *
- * @param roles{Array} An array of roles.
- * @returns {null|*} The highest ranking role, or null if no roles were given.
- */
-const findHighestUserRole = roles => {
-  if (roles.length === 0) {
-    return null;
+    throw e;
   }
-  roles.sort((r1, r2) => {
-    return ROLE_RANKS.indexOf(r1.name) - ROLE_RANKS.indexOf(r2.name);
-  });
-  return roles[0].name;
 };
 
 const getUser = R.curry(async (config, service, req, res) => {
@@ -49,17 +48,7 @@ const getUser = R.curry(async (config, service, req, res) => {
     throw e;
   }
 
-  try {
-    const roles = await service.getRolesOfUser(user.user_id);
-    user.role = findHighestUserRole(roles);
-  } catch (e) {
-    res.status(500).json({
-      error: 'IDPError',
-      message: `Unable to get role of user: ${user.email}`,
-    });
-
-    throw e;
-  }
+  user.role = await getUserRole(service, res, user);
 
   // Set the database ID of the user.
   user.id = req.body.id;
@@ -92,17 +81,7 @@ const listUsers = R.curry(async (config, service, req, res) => {
     /**
      * Get the role of each user.
      */
-    try {
-      const roles = await service.getRolesOfUser(user.user_id);
-      user.role = findHighestUserRole(roles);
-    } catch (e) {
-      res.status(500).json({
-        error: 'IDPError',
-        message: `Unable to get role of user: ${user.email}`,
-      });
-
-      throw e;
-    }
+    user.role = await getUserRole(service, res, user);
 
     delete user.user_id;
   }

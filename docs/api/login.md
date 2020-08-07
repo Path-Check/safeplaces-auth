@@ -19,8 +19,8 @@ POST /auth/login
 
 The access token was sent in the `Set-Cookie` response header. The cookie cannot be accessed by JavaScript.
 
-The user ID was returned in the response body, and it can be used to call other endpoints
-to act on the created user.
+The user ID and role were returned in the response body. The user ID can be used to call other endpoints
+to act on the logged-in user.
 
 ```http request
 Status: 200 OK
@@ -28,7 +28,8 @@ Status: 200 OK
 
 ```json
 {
-  "id": "a0f853d6-4c28-4384-9853-bec18293bfa9"
+  "id": "a0f853d6-4c28-4384-9853-bec18293bfa9",
+  "role": "contact_tracer"
 }
 ```
 
