@@ -69,19 +69,3 @@ Status: 401 Unauthorized
   "message": "Invalid registration token"
 }
 ```
-
-<br/>
-
-The server was unable to update user registration due to
-an unknown failure in the identity provider.
-
-```http request
-Status: 500 Internal Server Error
-```
-
-```json
-{
-  "error": "IDPError",
-  "message": "Unable to update user registration"
-}
-```
