@@ -21,3 +21,8 @@
     Frontend performs <code><a href="mfa/recover.md">POST /auth/mfa/recover</a></code>.
   </li>
 </ol>
+
+---
+
+[Home](../README.md) › [SafePlaces Information Security API](README.md)
+› Multi-factor Authentication Flow
