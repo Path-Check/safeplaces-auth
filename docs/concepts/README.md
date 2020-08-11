@@ -1,5 +1,11 @@
 # SafePlaces Information Security Concepts
 
+The methodology behind the SafePlaces Information Security service and how to
+set it up.
+
+Take note of the "Provisioning Auth0" chapter, which contains useful information
+on how to set up the identity provider.
+
 ## Table of Contents
 
 - [Architectural Separation](architectural-separation.md)
