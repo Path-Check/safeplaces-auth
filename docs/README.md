@@ -2,13 +2,14 @@
 
 The SafePlaces Information Security (Infosec) service is engineered to work in
 conjunction with the
-[SafePlaces Backend](https://github.com/Path-Check/safeplaces-backend).
+<a href="https://github.com/Path-Check/safeplaces-backend" target="_blank">
+SafePlaces Backend</a>.
 
 One of its core components is the
-[SafePlaces Auth](https://www.npmjs.com/package/@pathcheck/safeplaces-auth)
+<a href="https://www.npmjs.com/package/@pathcheck/safeplaces-auth" target="_blank">
+SafePlaces Auth
+</a>
 package, which is consumed by the backend server.
-
-## Table of Contents
 
 | **Section**                    | **Description**                                                                    |
 | ------------------------------ | ---------------------------------------------------------------------------------- |
