@@ -12,6 +12,6 @@ npm install @pathcheck/safeplaces-auth@^2.1.0
 yarn add @pathcheck/safeplaces-auth@^2.1.0
 ```
 
-## API Specification
+## Documentation
 
-See [SafePlaces Information Security API](docs/api/README.md) for more information.
+See [SafePlaces Information Security](docs/README.md) for more information.

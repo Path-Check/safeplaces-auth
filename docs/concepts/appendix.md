@@ -32,4 +32,5 @@ slash, which is not acceptable in the claim namespace.
 
 ---
 
-[⟵ Back to home page](../README.md)
+[Home](../README.md) › [SafePlaces Information Security Concepts](README.md)
+› Appendix

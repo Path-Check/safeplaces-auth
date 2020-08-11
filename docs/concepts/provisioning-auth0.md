@@ -172,4 +172,5 @@ section in the appendix for the script and for more information.
 
 ---
 
-[⟵ Back to home page](../README.md)
+[Home](../README.md) › [SafePlaces Information Security Concepts](README.md)
+› Provisioning Auth0

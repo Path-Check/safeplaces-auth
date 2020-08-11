@@ -21,3 +21,8 @@ See [SafePlaces Multi-factor Authentication Flow](../mfa-flow.md) for a walkthro
 
 See [Multi-factor Authentication Errors](errors.md) for some general
 errors that can occur when accessing the MFA endpoints.
+
+---
+
+[Home](../../README.md) › [SafePlaces Information Security API](../README.md)
+› Multi-factor Authentication API

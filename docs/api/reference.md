@@ -32,3 +32,8 @@
 - <code><a href="users/reset-mfa.md">POST /auth/users/reset-mfa</a></code>
 
 * <code><a href="users/reflect.md">GET /auth/users/reflect</a></code>
+
+---
+
+[Home](../README.md) › [SafePlaces Information Security API](README.md)
+› API Reference

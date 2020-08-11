@@ -20,3 +20,8 @@ All the following endpoints are protected and only accessible to authenticated s
 
 See [User Management Errors](errors.md) for some general
 errors that can occur when accessing the user management endpoints.
+
+---
+
+[Home](../../README.md) › [SafePlaces Information Security API](../README.md)
+› User Management API
